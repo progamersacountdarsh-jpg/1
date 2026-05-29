@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cartify - Online Shopping Site</title>
+    <title>Cartify - Ultimate Shopping Experience</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2 family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* --- Reset & Global Styles --- */
+        /* --- Global Reset & Variables --- */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background-color: #f1f2f6; color: #212121; position: relative; min-height: 100vh; padding-bottom: 50px; }
+        body { background-color: #f1f2f6; color: #212121; min-height: 100vh; padding-bottom: 60px; overflow-x: hidden; }
 
         /* --- Top Navigation Bar --- */
         .top-navbar {
@@ -26,21 +26,19 @@
             align-items: center; gap: 8px; font-weight: 700; font-style: italic; color: #ffffff;
             font-size: 18px; text-decoration: none;
         }
-        .brand-logo i { color: #ffffff; }
         .travel-tab {
             background-color: #f0f2f5; padding: 8px 20px; border-radius: 8px; display: flex;
             align-items: center; gap: 8px; font-weight: 500; color: #212121; text-decoration: none; font-size: 14px;
         }
-        .travel-tab i { color: #ff6f61; }
         .search-container { flex: 1; max-width: 500px; margin: 0 20px; position: relative; }
         .search-bar {
             width: 100%; padding: 11px 16px 11px 45px; border: 1px solid #2874f0;
-            border-radius: 8px; background-color: #f0f5ff; font-size: 14px; color: #212121; outline: none;
+            border-radius: 8px; background-color: #f0f5ff; font-size: 14px; outline: none;
         }
-        .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #717478; font-size: 16px; }
+        .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #717478; }
 
-        .nav-right { display: flex; align-items: center; gap: 25px; flex-shrink: 0; }
-        .nav-location { font-size: 12px; color: #000; display: flex; align-items: center; gap: 4px; }
+        .nav-right { display: flex; align-items: center; gap: 25px; }
+        .nav-location { font-size: 12px; display: flex; align-items: center; gap: 4px; }
         .nav-location span { color: #2874f0; font-weight: 600; cursor: pointer; }
         
         .nav-item {
@@ -48,207 +46,157 @@
             font-size: 15px; font-weight: 500; cursor: pointer; padding: 6px 12px; border-radius: 4px; transition: background 0.2s;
         }
         .nav-item:hover { background-color: #f0f5ff; }
+        
+        /* Cart link count indicator badge */
+        .cart-link { position: relative; }
+        .cart-count {
+            position: absolute; top: -2px; left: 22px; background-color: #ff6f61; color: white;
+            font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 50%;
+        }
 
-        /* --- Categories Row Bar --- */
+        /* --- Flipkart Style Horizontal Scroll Categories Bar --- */
         .categories-bar {
             background-color: #ffffff; padding: 12px 4%; display: flex;
             justify-content: space-between; align-items: flex-end; border-bottom: 1px solid #e0e0e0;
-            overflow-x: auto; white-space: nowrap; gap: 15px; margin-bottom: 20px;
+            overflow-x: auto; white-space: nowrap; gap: 15px; margin-bottom: 25px;
         }
         .category-item {
             display: inline-flex; flex-direction: column; align-items: center; justify-content: flex-end;
             gap: 8px; text-decoration: none; color: #212121; font-size: 13px; font-weight: 500;
-            min-width: 85px; height: 60px; text-align: center; cursor: pointer; flex-shrink: 0;
+            min-width: 90px; height: 60px; text-align: center; cursor: pointer; transition: color 0.2s;
         }
-        .category-item i {
-            font-size: 22px; color: #212121; display: inline-block; height: 24px;
-            background: linear-gradient(180deg, #212121 65%, #ffe500 65%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        }
+        .category-item i { font-size: 20px; color: #444; }
         .category-item.active { color: #2874f0; font-weight: 600; border-bottom: 3px solid #2874f0; }
-        .category-item.active i {
-            background: linear-gradient(180deg, #2874f0 65%, #ffe500 65%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        }
+        .category-item.active i { color: #2874f0; }
 
-        /* --- Products Grid Section --- */
+        /* --- Dynamic Products Section --- */
         .main-container { padding: 0 5%; }
-        .section-title { font-size: 22px; font-weight: 600; margin-bottom: 15px; color: #212121; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .section-title { font-size: 22px; font-weight: 600; color: #212121; }
         
         .products-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-            gap: 20px;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px;
         }
         .product-card {
-            background-color: #ffffff; border-radius: 8px; padding: 15px;
+            background-color: #ffffff; border-radius: 8px; padding: 16px;
             display: flex; flex-direction: column; justify-content: space-between;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: transform 0.2s, box-shadow 0.2s;
-            position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04); transition: transform 0.2s, box-shadow 0.2s;
         }
-        .product-card:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .product-card:hover { transform: translateY(-4px); box-shadow: 0 6px 16px rgba(0,0,0,0.1); }
         
-        .img-container { width: 100%; height: 180px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+        .img-container { width: 100%; height: 180px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
         .product-img { max-width: 100%; max-height: 100%; object-fit: contain; }
         
-        .product-name { font-size: 14px; font-weight: 500; color: #212121; margin-bottom: 6px; line-height: 1.3; height: 36px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-        .rating-badge { background-color: #388e3c; color: #ffffff; font-size: 12px; font-weight: 600; padding: 2px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 3px; width: fit-content; margin-bottom: 8px; }
+        .product-name { font-size: 14px; font-weight: 500; color: #212121; margin-bottom: 6px; line-height: 1.4; height: 40px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+        .rating-badge { background-color: #388e3c; color: #ffffff; font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 3px; margin-bottom: 10px; }
         
-        .price-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
-        .current-price { font-size: 16px; font-weight: 600; color: #212121; }
+        .price-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+        .current-price { font-size: 17px; font-weight: 600; }
         .original-price { font-size: 13px; color: #878787; text-decoration: line-through; }
         .discount-pct { font-size: 13px; color: #388e3c; font-weight: 600; }
         
         .buy-btn {
             background-color: #ff9900; color: #ffffff; border: none; width: 100%;
-            padding: 10px; border-radius: 6px; font-size: 14px; font-weight: 600;
-            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s;
+            padding: 11px; border-radius: 6px; font-size: 14px; font-weight: 600;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
         }
         .buy-btn:hover { background-color: #e68a00; }
 
-        /* --- Login Modal Styles --- */
+        /* --- Sliding Cart Sidebar Drawer --- */
+        .cart-drawer {
+            position: fixed; top: 0; right: -420px; width: 400px; height: 100%;
+            background-color: #ffffff; box-shadow: -4px 0 15px rgba(0,0,0,0.15);
+            z-index: 1001; transition: right 0.3s ease; display: flex; flex-direction: column;
+        }
+        .cart-drawer.open { right: 0; }
+        .cart-header { padding: 20px; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center; background-color: #2874f0; color: white; }
+        .cart-header h2 { font-size: 18px; font-weight: 600; }
+        .close-drawer { background: none; border: none; color: white; font-size: 22px; cursor: pointer; }
+        
+        .cart-items-wrapper { padding: 15px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 15px; }
+        .empty-cart-text { text-align: center; color: #878787; margin-top: 40px; font-size: 14px; }
+        
+        .cart-item-card { display: flex; gap: 12px; padding: 12px; border: 1px solid #e0e0e0; border-radius: 6px; align-items: center; }
+        .cart-item-img { width: 50px; height: 50px; object-fit: contain; }
+        .cart-item-details { flex: 1; }
+        .cart-item-title { font-size: 13px; font-weight: 500; height: 18px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .cart-item-price { font-size: 14px; font-weight: 600; color: #212121; margin-top: 4px; }
+        .remove-item-btn { background: none; border: none; color: #ff6f61; cursor: pointer; font-size: 14px; padding: 5px; }
+
+        .cart-footer { padding: 20px; border-top: 1px solid #e0e0e0; background-color: #f9f9f9; }
+        .summary-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 8px; color: #444; }
+        .summary-total { font-size: 17px; font-weight: 700; color: #212121; border-top: 1px dashed #ccc; padding-top: 10px; margin-top: 10px; }
+        .checkout-btn { background-color: #ff9900; color: white; border: none; width: 100%; padding: 14px; border-radius: 6px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 12px; text-align: center; }
+        .checkout-btn:hover { background-color: #e68a00; }
+
+        /* --- Auth Modal Overlay --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0, 0, 0, 0.6); display: flex; align-items: center;
             justify-content: center; z-index: 1000; display: none;
         }
-        .login-box { background-color: #ffffff; width: 650px; height: 450px; border-radius: 4px; display: flex; overflow: hidden; position: relative; }
-        .login-left { background-color: #2874f0; width: 40%; padding: 40px 33px; color: #ffffff; display: flex; flex-direction: column; justify-content: space-between; }
-        .login-left h2 { font-size: 28px; font-weight: 500; }
-        .login-left p { font-size: 15px; color: #dbdbdb; margin-top: 15px; line-height: 1.4; }
-        .login-right { width: 60%; padding: 50px 35px 20px 35px; display: flex; flex-direction: column; }
-        .input-group { position: relative; margin-bottom: 30px; }
-        .input-group input { width: 100%; padding: 10px 0; border: none; border-bottom: 1px solid #e0e0e0; outline: none; font-size: 14px; color: #212121; }
+        .login-box { background-color: #ffffff; width: 630px; height: 430px; border-radius: 4px; display: flex; overflow: hidden; position: relative; }
+        .login-left { background-color: #2874f0; width: 40%; padding: 40px 30px; color: #ffffff; display: flex; flex-direction: column; justify-content: space-between; }
+        .login-left h2 { font-size: 24px; font-weight: 500; }
+        .login-left p { font-size: 14px; color: #dbdbdb; margin-top: 12px; line-height: 1.4; }
+        .login-right { width: 60%; padding: 45px 35px; display: flex; flex-direction: column; }
+        .input-group { position: relative; margin-bottom: 25px; }
+        .input-group input { width: 100%; padding: 10px 0; border: none; border-bottom: 1px solid #e0e0e0; outline: none; font-size: 14px; }
         .input-group input:focus { border-bottom: 1px solid #2874f0; }
         .input-group label { position: absolute; left: 0; top: 10px; color: #878787; font-size: 14px; pointer-events: none; transition: 0.2s ease all; }
         .input-group input:focus ~ label, .input-group input:valid ~ label { top: -12px; font-size: 12px; color: #2874f0; }
-        .terms-text { font-size: 12px; color: #878787; margin-bottom: 20px; line-height: 1.4; }
-        .terms-text span { color: #2874f0; cursor: pointer; }
-        .login-btn { background-color: #ff9900; color: #ffffff; border: none; width: 100%; padding: 14px; border-radius: 2px; font-size: 15px; font-weight: 500; cursor: pointer; box-shadow: 0 1px 2px 0 rgba(0,0,0,.2); }
-        .close-modal { position: absolute; right: 15px; top: 10px; font-size: 24px; color: #878787; cursor: pointer; border: none; background: none; }
-
-        @media (max-width: 900px) {
-            .top-navbar { flex-wrap: wrap; gap: 12px; }
-            .search-container { order: 3; max-width: 100%; margin: 5px 0 0 0; }
-            .nav-right { justify-content: space-between; width: 100%; order: 2; }
-        }
+        .terms-text { font-size: 11px; color: #878787; margin-bottom: 20px; }
+        .terms-text span { color: #2874f0; }
+        .login-btn { background-color: #ff9900; color: #ffffff; border: none; width: 100%; padding: 14px; font-size: 15px; font-weight: 600; cursor: pointer; border-radius: 2px; }
+        .close-modal { position: absolute; right: 15px; top: 10px; font-size: 24px; color: #878787; cursor: none; background: none; border: none; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <header class="top-navbar">
         <div class="nav-left">
-            <a href="#" class="brand-logo"><i class="fa-solid fa-bolt"></i> Cartify</a>
+            <a href="#" class="brand-logo" onclick="filterCategory('all')"><i class="fa-solid fa-bolt"></i> Cartify</a>
             <a href="#" class="travel-tab"><i class="fa-solid fa-plane"></i> Travel</a>
         </div>
         <div class="search-container">
             <i class="fa-solid fa-magnifying-glass search-icon"></i>
-            <input type="text" class="search-bar" placeholder="Search for Products, Brands and More">
+            <input type="text" class="search-bar" id="searchBar" placeholder="Search for Products, Brands and More">
         </div>
         <div class="nav-right">
-            <div class="nav-location"><i class="fa-solid fa-location-dot"></i> Location not set <span>Select delivery location &gt;</span></div>
+            <div class="nav-location"><i class="fa-solid fa-location-dot"></i> Location not set <span>Select location &gt;</span></div>
             <div class="nav-item" id="loginTrigger">
                 <i class="fa-regular fa-user"></i> <span id="loginBtnText">Login</span> <i class="fa-solid fa-angle-down" style="font-size: 10px;"></i>
             </div>
-            <div class="nav-item">More <i class="fa-solid fa-angle-down" style="font-size: 10px;"></i></div>
-            <a href="#" class="nav-item"><i class="fa-solid fa-cart-shopping"></i> Cart</a>
+            <div class="nav-item cart-link" id="cartTrigger">
+                <i class="fa-solid fa-cart-shopping"></i> Cart
+                <span class="cart-count" id="cartCountIndicator">0</span>
+            </div>
         </div>
     </header>
 
-    <nav class="categories-bar">
-        <a href="#" class="category-item active"><i class="fa-solid fa-bag-shopping"></i><span>For You</span></a>
-        <a href="#" class="category-item"><i class="fa-solid fa-shirt"></i><span>Fashion</span></a>
-        <a href="#" class="category-item"><i class="fa-solid fa-mobile-screen-button"></i><span>Mobiles</span></a>
-        <a href="#" class="category-item"><i class="fa-solid fa-wand-magic-sparkles"></i><span>Beauty</span></a>
-        <a href="#" class="category-item"><i class="fa-solid fa-laptop"></i><span>Electronics</span></a>
-        <a href="#" class="category-item"><i class="fa-solid fa-house-chimney"></i><span>Home</span></a>
-        <a href="#" class="category-item"><i class="fa-solid fa-tv"></i><span>Appliances</span></a>
-        <a href="#" class="category-item"><i class="fa-solid fa-face-smile"></i><span>Toys, baby...</span></a>
-        <a href="#" class="category-item"><i class="fa-solid fa-prescription-bottle"></i><span>Food & H...</span></a>
-        <a href="#" class="category-item"><i class="fa-solid fa-motorcycle"></i><span>2 Wheelers</span></a>
-        <a href="#" class="category-item"><i class="fa-solid fa-baseball-bat-ball"></i><span>Sports & ...</span></a>
-        <a href="#" class="category-item"><i class="fa-solid fa-book"></i><span>Books & ...</span></a>
-        <a href="#" class="category-item"><i class="fa-solid fa-couch"></i><span>Furniture</span></a>
-    </nav>
+    <nav class="categories-bar" id="categoriesContainer"></nav>
 
     <main class="main-container">
-        <h2 class="section-title">Trending Deals of the Day</h2>
-        <div class="products-grid">
-            
-            <div class="product-card">
-                <div class="img-container">
-                    <img class="product-img" src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400" alt="Smartphone">
-                </div>
-                <div>
-                    <h3 class="product-name">ProPhone 15 (Blue, 128GB Storage)</h3>
-                    <div class="rating-badge">4.3 <i class="fa-solid fa-star"></i></div>
-                    <div class="price-row">
-                        <span class="current-price">₹65,999</span>
-                        <span class="original-price">₹79,900</span>
-                        <span class="discount-pct">17% off</span>
-                    </div>
-                </div>
-                <button class="buy-btn" onclick="addToCart('ProPhone 15', '₹65,999')">
-                    <i class="fa-solid fa-cart-plus"></i> Add to Cart
-                </button>
-            </div>
-
-            <div class="product-card">
-                <div class="img-container">
-                    <img class="product-img" src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400" alt="Shoes">
-                </div>
-                <div>
-                    <h3 class="product-name">AirSport Running Sneakers - Orange-Red</h3>
-                    <div class="rating-badge">4.1 <i class="fa-solid fa-star"></i></div>
-                    <div class="price-row">
-                        <span class="current-price">₹2,499</span>
-                        <span class="original-price">₹4,999</span>
-                        <span class="discount-pct">50% off</span>
-                    </div>
-                </div>
-                <button class="buy-btn" onclick="addToCart('AirSport Running Sneakers', '₹2,499')">
-                    <i class="fa-solid fa-cart-plus"></i> Add to Cart
-                </button>
-            </div>
-
-            <div class="product-card">
-                <div class="img-container">
-                    <img class="product-img" src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400" alt="Headphones">
-                </div>
-                <div>
-                    <h3 class="product-name">BassBoom Wireless ANC Headphones Over-Ear</h3>
-                    <div class="rating-badge">4.5 <i class="fa-solid fa-star"></i></div>
-                    <div class="price-row">
-                        <span class="current-price">₹3,199</span>
-                        <span class="original-price">₹6,999</span>
-                        <span class="discount-pct">54% off</span>
-                    </div>
-                </div>
-                <button class="buy-btn" onclick="addToCart('BassBoom ANC Headphones', '₹3,199')">
-                    <i class="fa-solid fa-cart-plus"></i> Add to Cart
-                </button>
-            </div>
-
-            <div class="product-card">
-                <div class="img-container">
-                    <img class="product-img" src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400" alt="Watch">
-                </div>
-                <div>
-                    <h3 class="product-name">ChronoMax Smart Fitness Watch Pro Series</h3>
-                    <div class="rating-badge">4.2 <i class="fa-solid fa-star"></i></div>
-                    <div class="price-row">
-                        <span class="current-price">₹1,999</span>
-                        <span class="original-price">₹5,999</span>
-                        <span class="discount-pct">66% off</span>
-                    </div>
-                </div>
-                <button class="buy-btn" onclick="addToCart('ChronoMax Smart Watch', '₹1,999')">
-                    <i class="fa-solid fa-cart-plus"></i> Add to Cart
-                </button>
-            </div>
-
+        <div class="section-header">
+            <h2 class="section-title" id="galleryTitle">Trending Products For You</h2>
         </div>
+        <div class="products-grid" id="productsGrid"></div>
     </main>
+
+    <div class="cart-drawer" id="cartDrawer">
+        <div class="cart-header">
+            <h2><i class="fa-solid fa-cart-shopping"></i> My Cart</h2>
+            <button class="close-drawer" id="closeDrawer">&times;</button>
+        </div>
+        <div class="cart-items-wrapper" id="cartItemsContainer"></div>
+        <div class="cart-footer">
+            <div class="summary-row"><span>Price Details</span><span id="summaryItemsCount">(0 Items)</span></div>
+            <div class="summary-row"><span>Total MRP Price</span><span id="summaryBasePrice">₹0</span></div>
+            <div class="summary-row"><span>Cartify Discount</span><span id="summaryDiscount" style="color: #388e3c;">-₹0</span></div>
+            <div class="summary-row summary-total"><span>Total Amount Payable</span><span id="summaryFinalTotal">₹0</span></div>
+            <button class="checkout-btn" id="placeOrderBtn">Place Order Securely</button>
+        </div>
+    </div>
 
     <div class="modal-overlay" id="loginModal">
         <div class="login-box">
@@ -256,24 +204,15 @@
             <div class="login-left">
                 <div>
                     <h2>Join Us</h2>
-                    <p>Get access to your Orders, Wishlist and Recommendations</p>
+                    <p>Access your orders, personalized shopping matching engine, and faster checkouts</p>
                 </div>
-                <i class="fa-solid fa-truck-fast" style="font-size: 60px; opacity: 0.3;"></i>
+                <i class="fa-solid fa-truck-fast" style="font-size: 50px; opacity: 0.2;"></i>
             </div>
             <div class="login-right">
                 <form id="loginForm">
-                    <div class="input-group">
-                        <input type="text" id="userName" required autocomplete="off">
-                        <label>Enter Name</label>
-                    </div>
-                    <div class="input-group">
-                        <input type="email" id="userEmail" required autocomplete="off">
-                        <label>Enter Email</label>
-                    </div>
-                    <div class="input-group">
-                        <input type="tel" id="userPhone" required autocomplete="off" pattern="[0-9]{10}">
-                        <label>Enter Mobile Number</label>
-                    </div>
+                    <div class="input-group"><input type="text" id="userName" required autocomplete="off"><label>Enter Name</label></div>
+                    <div class="input-group"><input type="email" id="userEmail" required autocomplete="off"><label>Enter Email</label></div>
+                    <div class="input-group"><input type="tel" id="userPhone" required autocomplete="off" pattern="[0-9]{10}"><label>Enter Mobile Number</label></div>
                     <p class="terms-text">By continuing, you agree to Cartify's <span>Terms of Use</span> and <span>Privacy Policy</span>.</p>
                     <button type="submit" class="login-btn">Continue</button>
                 </form>
@@ -285,6 +224,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
+        // Firebase Config Setup
         const firebaseConfig = {
             apiKey: "AIzaSyBb8BSRxP1n7_TLDurSDkCmkyuX2jePCfQ",
             authDomain: "cartify-8f09c.firebaseapp.com",
@@ -299,21 +239,222 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Track Current Session Locally
+        // State variables
         let currentUser = null;
+        let localCart = [];
+        let currentSelectedCategory = 'all';
 
-        // UI Modal Controls
+        // 1. Flipkart-based Comprehensive Product Data Catalog Schema
+        const productsData = [
+            { id: 1, name: "ProPhone 15 (Blue, 128GB Storage)", price: 65999, originalPrice: 79900, discount: "17% off", rating: 4.3, category: "mobiles", img: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400" },
+            { id: 2, name: "AirSport Tech Elite Running Sneakers", price: 2499, originalPrice: 4999, discount: "50% off", rating: 4.1, category: "fashion", img: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400" },
+            { id: 3, name: "BassBoom Premium Wireless Over-Ear Headphones", price: 3199, originalPrice: 6999, discount: "54% off", rating: 4.5, category: "electronics", img: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400" },
+            { id: 4, name: "ChronoMax Smart Fitness Watch Pro Series", price: 1999, originalPrice: 5999, discount: "66% off", rating: 4.2, category: "electronics", img: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400" },
+            { id: 5, name: "GlowMatte Ultimate Long-stay Lipstick Pack", price: 499, originalPrice: 999, discount: "50% off", rating: 4.4, category: "beauty", img: "https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=400" },
+            { id: 6, name: "ErgoComfort Cushion Solid Wood Living Sofa", price: 14499, originalPrice: 29999, discount: "51% off", rating: 4.0, category: "furniture", img: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400" },
+            { id: 7, name: "Smart智能 UltraHD LED Display Smart TV 43\"", price: 22499, originalPrice: 38000, discount: "40% off", rating: 4.6, category: "appliances", img: "https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=400" },
+            { id: 8, name: "Prestige BlendMaster 750W Juicer Grinder", price: 3299, originalPrice: 5499, discount: "40% off", rating: 4.3, category: "appliances", img: "https://images.unsplash.com/photo-1578643463396-0997cb5328c1?w=400" }
+        ];
+
+        // Categories Configuration List
+        const categoriesList = [
+            { id: 'all', label: 'For You', icon: 'fa-solid fa-bag-shopping' },
+            { id: 'fashion', label: 'Fashion', icon: 'fa-solid fa-shirt' },
+            { id: 'mobiles', label: 'Mobiles', icon: 'fa-solid fa-mobile-screen-button' },
+            { id: 'beauty', label: 'Beauty', icon: 'fa-solid fa-wand-magic-sparkles' },
+            { id: 'electronics', label: 'Electronics', icon: 'fa-solid fa-laptop' },
+            { id: 'appliances', label: 'Appliances', icon: 'fa-solid fa-tv' },
+            { id: 'furniture', label: 'Furniture', icon: 'fa-solid fa-couch' }
+        ];
+
+        // UI Element Binding Declarations
         const loginTrigger = document.getElementById('loginTrigger');
         const loginModal = document.getElementById('loginModal');
         const closeModal = document.getElementById('closeModal');
         const loginForm = document.getElementById('loginForm');
         const loginBtnText = document.getElementById('loginBtnText');
+        
+        const cartTrigger = document.getElementById('cartTrigger');
+        const cartDrawer = document.getElementById('cartDrawer');
+        const closeDrawer = document.getElementById('closeDrawer');
+        const cartItemsContainer = document.getElementById('cartItemsContainer');
+        const cartCountIndicator = document.getElementById('cartCountIndicator');
+        const searchBar = document.getElementById('searchBar');
+        
+        const placeOrderBtn = document.getElementById('placeOrderBtn');
 
+        // Dynamic Categories Generator
+        function renderCategoriesBar() {
+            const container = document.getElementById('categoriesContainer');
+            container.innerHTML = categoriesList.map(cat => `
+                <div class="category-item ${cat.id === currentSelectedCategory ? 'active' : ''}" data-id="${cat.id}">
+                    <i class="${cat.icon}"></i>
+                    <span>${cat.label}</span>
+                </div>
+            `).join('');
+
+            // Click listener mapping
+            document.querySelectorAll('.category-item').forEach(element => {
+                element.addEventListener('click', () => {
+                    const categoryId = element.getAttribute('data-id');
+                    filterCategory(categoryId);
+                });
+            });
+        }
+
+        // Active Product Grid Filter mapping function
+        window.renderProductsGrid = function(filteredItems) {
+            const grid = document.getElementById('productsGrid');
+            if (filteredItems.length === 0) {
+                grid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #878787; padding: 40px;">No products found matching the criteria.</p>`;
+                return;
+            }
+            grid.innerHTML = filteredItems.map(item => `
+                <div class="product-card">
+                    <div class="img-container">
+                        <img class="product-img" src="${item.img}" alt="${item.name}">
+                    </div>
+                    <div>
+                        <h3 class="product-name">${item.name}</h3>
+                        <div class="rating-badge">${item.rating} <i class="fa-solid fa-star"></i></div>
+                        <div class="price-row">
+                            <span class="current-price">Reference Pricing: ₹${item.price.toLocaleString('en-IN')}</span>
+                            <span class="original-price">₹${item.originalPrice.toLocaleString('en-IN')}</span>
+                            <span class="discount-pct">${item.discount}</span>
+                        </div>
+                    </div>
+                    <button class="buy-btn" data-id="${item.id}">
+                        <i class="fa-solid fa-cart-plus"></i> Add to Cart
+                    </button>
+                </div>
+            `).join('');
+
+            // Add Click listener onto dynamically outputted buttons
+            grid.querySelectorAll('.buy-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const prodId = parseInt(btn.getAttribute('data-id'));
+                    addToCart(prodId);
+                });
+            });
+        }
+
+        function filterCategory(catId) {
+            currentSelectedCategory = catId;
+            renderCategoriesBar();
+            document.getElementById('galleryTitle').innerText = catId === 'all' ? "Trending Products For You" : `Top Offers on ${catId.charAt(0).toUpperCase() + catId.slice(1)}`;
+            
+            const results = catId === 'all' ? productsData : productsData.filter(p => p.category === catId);
+            renderProductsGrid(results);
+        }
+
+        // Search Bar Event Engine
+        searchBar.addEventListener('input', (e) => {
+            const keyword = e.target.value.toLowerCase();
+            const filtered = productsData.filter(p => p.name.toLowerCase().includes(keyword));
+            renderProductsGrid(filtered);
+        });
+
+        // 2. Local Cart Engine Operations mapping
+        function addToCart(productId) {
+            if (!currentUser) {
+                alert("Please authenticate using the Login window at the header navigation bar before executing item purchases!");
+                loginModal.style.display = 'flex';
+                return;
+            }
+            
+            const targetedProduct = productsData.find(p => p.id === productId);
+            localCart.push(targetedProduct);
+            updateCartInterface();
+            
+            // Pop item drawer out visually upon addition
+            cartDrawer.classList.add('open');
+        }
+
+        window.removeItemFromCart = function(indexInCart) {
+            localCart.splice(indexInCart, 1);
+            updateCartInterface();
+        }
+
+        function updateCartInterface() {
+            // Count management calculation
+            cartCountIndicator.innerText = localCart.length;
+            document.getElementById('summaryItemsCount').innerText = `(${localCart.length} Item${localCart.length === 1 ? '' : 's'})`;
+
+            if (localCart.length === 0) {
+                cartItemsContainer.innerHTML = `<p class="empty-cart-text"><i class="fa-regular fa-face-frown" style="font-size: 30px; margin-bottom: 10px; display: block;"></i>Your shopping cart is currently empty.</p>`;
+                document.getElementById('summaryBasePrice').innerText = "₹0";
+                document.getElementById('summaryDiscount').innerText = "-₹0";
+                document.getElementById('summaryFinalTotal').innerText = "₹0";
+                return;
+            }
+
+            // Calculation processing
+            let totalBasePrice = 0;
+            let totalFinalPrice = 0;
+
+            cartItemsContainer.innerHTML = localCart.map((item, index) => {
+                totalBasePrice += item.originalPrice;
+                totalFinalPrice += item.price;
+
+                return `
+                    <div class="cart-item-card">
+                        <img src="${item.img}" class="cart-item-img" alt="">
+                        <div class="cart-item-details">
+                            <h4 class="cart-item-title">${item.name}</h4>
+                            <p class="cart-item-price">₹${item.price.toLocaleString('en-IN')}</p>
+                        </div>
+                        <button class="remove-item-btn" onclick="removeItemFromCart(${index})">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+
+            const totalSavingsCalculated = totalBasePrice - totalFinalPrice;
+            document.getElementById('summaryBasePrice').innerText = `₹${totalBasePrice.toLocaleString('en-IN')}`;
+            document.getElementById('summaryDiscount').innerText = `-₹${totalSavingsCalculated.toLocaleString('en-IN')}`;
+            document.getElementById('summaryFinalTotal').innerText = `₹${totalFinalPrice.toLocaleString('en-IN')}`;
+        }
+
+        // 3. Placing Completed Orders straight into Firebase Node
+        placeOrderBtn.addEventListener('click', async () => {
+            if (localCart.length === 0) {
+                alert("Add items into your cart before triggering the checkout order compilation engine!");
+                return;
+            }
+
+            const totalInvoiceAmount = document.getElementById('summaryFinalTotal').innerText;
+            const itemsSummaryArray = localCart.map(item => ({ item_id: item.id, product_title: item.name, price_paid: item.price }));
+
+            try {
+                // Post object profile payload to /completed_orders
+                await push(ref(db, 'completed_orders'), {
+                    customerDetails: currentUser,
+                    itemsPurchased: itemsSummaryArray,
+                    totalBillPaid: totalInvoiceAmount,
+                    orderTimestampString: new Date().toISOString()
+                });
+
+                alert(`🎉 Order Placed Successfully!\nInvoice Total: ${totalInvoiceAmount}\n\nYour purchase structure record details have been logged onto the Firebase Realtime Database panel.`);
+                
+                // Reset cart view state block
+                localCart = [];
+                updateCartInterface();
+                cartDrawer.classList.remove('open');
+            } catch (err) {
+                console.error("Order Transaction Logging Aborted: ", err);
+                alert("Database submission breakdown failed.");
+            }
+        });
+
+        // Toggle triggers interface listeners
         loginTrigger.addEventListener('click', () => loginModal.style.display = 'flex');
         closeModal.addEventListener('click', () => loginModal.style.display = 'none');
-        window.addEventListener('click', (e) => { if(e.target === loginModal) loginModal.style.display = 'none'; });
+        
+        cartTrigger.addEventListener('click', () => cartDrawer.classList.add('open'));
+        closeDrawer.addEventListener('click', () => cartDrawer.classList.remove('open'));
 
-        // Handle Login Submission
+        // Form profile compilation capturing block
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -324,47 +465,21 @@
             };
 
             try {
-                // Log user info to database
                 await push(ref(db, 'registered_users'), {
                     ...currentUser,
-                    submittedAt: new Date().toISOString()
+                    registeredAt: new Date().toISOString()
                 });
 
-                // Update navigation text with user's name
-                loginBtnText.innerText = currentUser.name.split(" ")[0]; 
-                alert(`Welcome, ${currentUser.name}! You can now buy products.`);
+                loginBtnText.innerText = currentUser.name.split(" ")[0];
+                alert(`Welcome back, ${currentUser.name}! Navigation system activated.`);
                 loginModal.style.display = 'none';
             } catch (error) {
-                console.error("Database Save Error: ", error);
+                console.error("User submission registry fatal loop fault: ", error);
             }
         });
 
-        // Expose add to cart globally for the buttons to access
-        window.addToCart = async function(productName, productPrice) {
-            // Require user to login first
-            if (!currentUser) {
-                alert("Please click 'Login' at the top bar to verify your account details before adding items to cart!");
-                loginModal.style.display = 'flex';
-                return;
-            }
-
-            try {
-                // Store order under 'cart_orders' mapping it directly to customer credentials
-                await push(ref(db, 'cart_orders'), {
-                    buyerName: currentUser.name,
-                    buyerPhone: currentUser.phone,
-                    buyerEmail: currentUser.email,
-                    itemOrdered: productName,
-                    itemPrice: productPrice,
-                    orderedAt: new Date().toISOString()
-                });
-
-                alert(`🎉 Added to Cart! Stored order for ${productName} under your name.`);
-            } catch (error) {
-                console.error("Order Failed: ", error);
-                alert("Could not process product selection.");
-            }
-        }
+        // Initialize display content setup loops
+        filterCategory('all');
     </script>
 </body>
 </html>
