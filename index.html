@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kids Rapid Multiplayer Quiz</title>
-    <!-- PeerJS for seamless direct device-to-device connection -->
+    <title>Class 6 Rapid Random Quiz</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         :root {
@@ -159,7 +158,7 @@
             color: #55efc4;
         }
 
-        /* Timer bar components */
+        /* Timer components */
         .timer-container {
             width: 100%;
             height: 14px;
@@ -229,9 +228,8 @@
 <body>
 
     <div class="container">
-        <!-- SCREEN 1: Setup & Connection Menu -->
         <div id="setup-screen" class="screen active">
-            <h1>🎒 Kid's Quiz Arena ✏️</h1>
+            <h1>🎒 Class 6 Random Quiz Arena ✏️</h1>
             <div class="input-group">
                 <label for="username">Your Nickname:</label>
                 <input type="text" id="username" placeholder="Type your name here...">
@@ -239,12 +237,10 @@
             
             <hr style="opacity: 0.1; margin: 25px 0;">
 
-            <!-- Host Option -->
             <button onclick="initiateHost()">Option A: Create a New Room</button>
             
             <div class="divider">OR</div>
             
-            <!-- Join Option -->
             <div class="input-group">
                 <label for="join-room-id">Enter Friend's Room Code:</label>
                 <input type="text" id="join-room-id" placeholder="e.g., quiz-1234">
@@ -252,7 +248,6 @@
             <button style="background: #a29bfe; color: #1e1b4b; box-shadow: 0 4px 0 #6c5ce7;" onclick="connectToHost()">Option B: Join Friend's Room</button>
         </div>
 
-        <!-- SCREEN 2: Waiting Lobby -->
         <div id="waiting-screen" class="screen">
             <h2>Lobby Status</h2>
             <div id="room-info-display" class="room-display" style="display:none;">
@@ -262,7 +257,6 @@
             <div class="waiting-msg" id="waiting-status">Setting up network connection...</div>
         </div>
 
-        <!-- SCREEN 3: Live Gameplay -->
         <div id="quiz-screen" class="screen">
             <div class="live-scoreboard">
                 <div class="score-box">
@@ -275,7 +269,6 @@
                 </div>
             </div>
 
-            <!-- 10 Sec Individual Timer Bar -->
             <div class="timer-container">
                 <div id="timer" class="timer-bar"></div>
             </div>
@@ -285,7 +278,6 @@
             <div class="waiting-msg" id="status-message"></div>
         </div>
 
-        <!-- SCREEN 4: Match Report Summary -->
         <div id="results-screen" class="screen">
             <h1>✨ Match Results ✨</h1>
             <h2 id="winner-text" style="color: #55efc4; font-size: 32px; text-align: center; margin: 25px 0; white-space: pre-wrap;"></h2>
@@ -294,16 +286,26 @@
     </div>
 
     <script>
-        // Class 5th & 6th grade school quiz questions pool
-        const quizData = [
-            { q: "Which planet in our solar system is known as the Red Planet?", options: ["Venus", "Mars", "Jupiter"], correct: 1 },
-            { q: "What is the boiling point of water in degrees Celsius?", options: ["50°C", "100°C", "200°C"], correct: 1 },
-            { q: "How many sides does a regular hexagon have?", options: ["5 sides", "6 sides", "8 sides"], correct: 1 },
-            { q: "Which gas do plants absorb from the air during photosynthesis?", options: ["Oxygen", "Nitrogen", "Carbon Dioxide"], correct: 2 },
-            { q: "What is the largest organ in the human body?", options: ["The Skin", "The Liver", "The Brain"], correct: 0 },
-            { q: "How many years are there in a single century?", options: ["10 years", "50 years", "100 years"], correct: 2 }
+        // Expanded Class 6 Master Question Pool
+        const masterQuizData = [
+            // Science & Materials
+            { q: "What is the process of changing water into water vapor called?", options: ["Condensation", "Evaporation", "Freezing"], correct: 1 },
+            { q: "Which of these components is a component of food that does NOT provide energy, but helps clear waste?", options: ["Vitamins", "Roughage / Dietary Fibre", "Carbohydrates"], correct: 1 },
+            { q: "What kind of joint is found between our head and upper neck?", options: ["Hinge Joint", "Ball and Socket Joint", "Pivotal Joint"], correct: 2 },
+            { q: "Which of the following is a luminous object?", options: ["The Moon", "The Sun", "A Wooden Table"], correct: 1 },
+            { q: "What do we call materials through which objects can be seen, but not clearly?", options: ["Transparent", "Opaque", "Translucent"], correct: 2 },
+            // Mathematics
+            { q: "What is the perimeter of a regular triangle with each side measuring 5 cm?", options: ["10 cm", "15 cm", "25 cm"], correct: 1 },
+            { q: "What is the smallest prime number?", options: ["1", "2", "3"], correct: 1 },
+            { q: "A fraction with a numerator greater than its denominator is called a...", options: ["Proper Fraction", "Improper Fraction", "Mixed Fraction"], correct: 1 },
+            // History & Geography
+            { q: "Which imaginary line divides the Earth into the Northern and Southern Hemispheres?", options: ["The Equator", "Tropic of Cancer", "Prime Meridian"], correct: 0 },
+            { q: "What are maps that show natural physical features of the earth called?", options: ["Political Maps", "Physical Maps", "Thematic Maps"], correct: 1 },
+            { q: "Which planet is closest to the Sun?", options: ["Earth", "Venus", "Mercury"], correct: 2 },
+            { q: "What is the script used to write the Hindi language?", options: ["Devanagari", "Roman", "Brahmi"], correct: 0 }
         ];
 
+        let quizData = []; // This will hold the randomized selection for this session
         let peer = null;
         let connection = null;
         let myName = "";
@@ -313,7 +315,7 @@
         let myScore = 0;
         let oppScore = 0;
         
-        let timeLeft = 10; // Updated to 10 seconds
+        let timeLeft = 10; 
         let timerInterval;
         let myFinished = false;
         let oppFinished = false;
@@ -321,6 +323,22 @@
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
+        }
+
+        // Shuffles an array randomly
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Prepare 6 random questions from our pool
+        function setupRandomQuestions() {
+            let shuffled = shuffleArray([...masterQuizData]);
+            // Pick a fixed number of questions per game (e.g., 6 questions)
+            quizData = shuffled.slice(0, 6);
         }
 
         // ==========================================
@@ -386,6 +404,8 @@
         // ==========================================
         function setupConnectionDataListeners() {
             connection.on('open', () => {
+                // Initialize random questions locally on connect
+                setupRandomQuestions();
                 connection.send({ type: 'HANDSHAKE', name: myName });
             });
 
@@ -416,7 +436,7 @@
         }
 
         function loadQuestion() {
-            timeLeft = 10; // Set clock back to full 10s bar
+            timeLeft = 10; 
             document.getElementById('status-message').textContent = "";
             
             const currentQ = quizData[currentQuestionIndex];
@@ -444,13 +464,13 @@
                 updateTimerBar();
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
-                    submitAnswer(-1); // Automatically time out
+                    submitAnswer(-1); 
                 }
             }, 1000);
         }
 
         function updateTimerBar() {
-            const percentage = (timeLeft / 10) * 100; // Recalculated out of 10 seconds
+            const percentage = (timeLeft / 10) * 100; 
             document.getElementById('timer').style.width = `${percentage}%`;
         }
 
@@ -463,13 +483,13 @@
                 document.getElementById('my-live-score').textContent = myScore;
             }
 
-            // Send score to opponent right away
+            // Sync score live to opponent
             connection.send({
                 type: 'SCORE_UPDATE',
                 score: myScore
             });
 
-            // Move straight to the next question without waiting!
+            // Instant progress to next index card
             currentQuestionIndex++;
             if (currentQuestionIndex < quizData.length) {
                 loadQuestion();
@@ -477,18 +497,16 @@
                 myFinished = true;
                 connection.send({ type: 'FINISHED' });
                 
-                // Clear out UI elements
                 document.getElementById('question-text').textContent = "You finished all questions!";
                 document.getElementById('options-container').innerHTML = "";
                 document.getElementById('timer').style.width = "0%";
-                document.getElementById('status-message').textContent = `Waiting for ${opponentName} to cross the finish line...`;
+                document.getElementById('status-message').textContent = `Waiting for ${opponentName} to complete their round...`;
                 
                 checkMatchEnd();
             }
         }
 
         function checkMatchEnd() {
-            // End match only when both players have finished their respective question runs
             if (myFinished && oppFinished) {
                 showScreen('results-screen');
                 let resultText = "";
