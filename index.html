@@ -6,7 +6,7 @@
     <title>Cartify Replica with Login</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2 family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
@@ -87,7 +87,6 @@
         }
         .login-left h2 { font-size: 28px; font-weight: 500; }
         .login-left p { font-size: 15px; color: #dbdbdb; margin-top: 15px; line-height: 1.4; }
-        .login-left img { width: 100%; opacity: 0.8; }
         
         .login-right { width: 60%; padding: 50px 35px 20px 35px; display: flex; flex-direction: column; }
         .input-group { position: relative; margin-bottom: 30px; }
@@ -195,14 +194,15 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // TODO: Paste your personalized Firebase config object right here
+        // Your custom Firebase configuration object injected safely
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            apiKey: "AIzaSyBb8BSRxP1n7_TLDurSDkCmkyuX2jePCfQ",
+            authDomain: "cartify-8f09c.firebaseapp.com",
+            projectId: "cartify-8f09c",
+            storageBucket: "cartify-8f09c.firebasestorage.app",
+            messagingSenderId: "634503591525",
+            appId: "1:634503591525:web:f1720972317122f3ebb88c",
+            measurementId: "G-TJKJ6YT7YK"
         };
 
         // Initialize Firebase & Database
@@ -228,7 +228,7 @@
             const phone = document.getElementById('userPhone').value;
 
             try {
-                // Saves data directly inside a collection called "users"
+                // Saves data inside a collection called "users"
                 await addDoc(collection(db, "users"), {
                     fullName: name,
                     emailAddress: email,
@@ -241,7 +241,7 @@
                 loginModal.style.display = 'none';
             } catch (error) {
                 console.error("Database Error: ", error);
-                alert("Something went wrong. Check the console config.");
+                alert("Something went wrong. Check your Firestore configuration/rules.");
             }
         });
     </script>
