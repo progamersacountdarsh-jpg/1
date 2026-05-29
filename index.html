@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Real-Time Multiplayer Quiz</title>
-    <script src="https://cdn.pubnub.com/sdk/javascript/pubnub.7.2.2.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         :root {
             --primary: #6c5ce7;
@@ -57,7 +57,6 @@
             color: var(--secondary);
         }
 
-        /* Setup Screen */
         .input-group {
             margin-bottom: 20px;
         }
@@ -76,6 +75,7 @@
             background: rgba(255,255,255,0.05);
             color: #fff;
             font-size: 16px;
+            text-align: center;
         }
 
         button {
@@ -89,6 +89,7 @@
             font-weight: bold;
             cursor: pointer;
             transition: 0.3s;
+            margin-top: 10px;
         }
 
         button:hover {
@@ -96,12 +97,29 @@
             transform: translateY(-2px);
         }
 
-        /* Waiting Screen */
-        .loader {
+        .divider {
+            text-align: center;
+            margin: 15px 0;
+            color: #888;
+            font-weight: bold;
+        }
+
+        /* Room Display Status */
+        .room-display {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 8px;
             text-align: center;
             font-size: 18px;
-            color: var(--secondary);
-            margin: 20px 0;
+            margin-bottom: 20px;
+            border: 1px dashed var(--secondary);
+        }
+
+        .room-code-highlight {
+            font-size: 24px;
+            font-weight: bold;
+            color: #00b894;
+            letter-spacing: 2px;
         }
 
         /* Live Scoreboard Header */
@@ -182,7 +200,6 @@
             cursor: not-allowed;
         }
 
-        /* Feedback status */
         .waiting-msg {
             text-align: center;
             font-style: italic;
@@ -195,21 +212,32 @@
 
     <div class="container">
         <div id="setup-screen" class="screen active">
-            <h1>Multiplayer Quiz Battle</h1>
+            <h1>Multiplayer Quiz</h1>
             <div class="input-group">
                 <label for="username">Your Name:</label>
-                <input type="text" id="username" placeholder="Enter your name...">
+                <input type="text" id="username" placeholder="Enter name...">
             </div>
+            
+            <hr style="opacity: 0.1; margin: 25px 0;">
+
+            <button onclick="initiateHost()">Option A: Host a New Game Room</button>
+            
+            <div class="divider">OR</div>
+            
             <div class="input-group">
-                <label for="room-id">Game Room ID (Must match your friend's room ID):</label>
-                <input type="text" id="room-id" value="quiz-room-123" placeholder="Enter a shared room code">
+                <label for="join-room-id">Enter Friend's Room Code:</label>
+                <input type="text" id="join-room-id" placeholder="e.g., quiz-5732">
             </div>
-            <button onclick="connectToGame()">Join Game Room</button>
+            <button style="background: #2d142c; border: 1px solid var(--primary);" onclick="connectToHost()">Option B: Join Existing Room</button>
         </div>
 
         <div id="waiting-screen" class="screen">
-            <h2>Connecting...</h2>
-            <div class="loader" id="waiting-status">Waiting for Opponent to connect to this room...</div>
+            <h2>Lobby Status</h2>
+            <div id="room-info-display" class="room-display" style="display:none;">
+                Share this Room Code with your friend:<br>
+                <span id="generated-code" class="room-code-highlight">---</span>
+            </div>
+            <div class="waiting-msg" id="waiting-status">Initializing networking...</div>
         </div>
 
         <div id="quiz-screen" class="screen">
@@ -235,8 +263,8 @@
 
         <div id="results-screen" class="screen">
             <h1>Game Over!</h1>
-            <h2 id="winner-text" style="color: var(--success); font-size: 28px;">Calculating...</h2>
-            <button onclick="location.reload()">Play Again</button>
+            <h2 id="winner-text" style="color: var(--success); font-size: 28px; text-align: center; margin: 20px 0;"></h2>
+            <button onclick="location.reload()">Play Another Match</button>
         </div>
     </div>
 
@@ -249,11 +277,10 @@
             { q: "Which CSS property controls text size?", options: ["text-style", "text-size", "font-size"], correct: 2 }
         ];
 
-        let pubnub;
-        let myId = 'user_' + Math.random().toString(36).substr(2, 9); 
+        let peer = null;
+        let connection = null;
         let myName = "";
         let opponentName = "Opponent";
-        let roomChannel = "";
         
         let currentQuestionIndex = 0;
         let myScore = 0;
@@ -269,70 +296,97 @@
             document.getElementById(screenId).classList.add('active');
         }
 
-        // Initialize Realtime Network
-        function connectToGame() {
-            myName = document.getElementById('username').value.trim() || "Anonymous";
-            roomChannel = document.getElementById('room-id').value.trim() || "default-quiz-room";
+        // ==========================================
+        // OPTION A: ACT AS HOST
+        // ==========================================
+        function initiateHost() {
+            myName = document.getElementById('username').value.trim() || "Host Player";
+            showScreen('waiting-screen');
+            document.getElementById('waiting-status').textContent = "Generating room code...";
 
-            if (!roomChannel) return alert("Please enter a room ID");
+            // Create a random readable 4-digit room code
+            const randomCode = Math.floor(1000 + Math.random() * 9000);
+            const hostRoomId = `quiz-${randomCode}`;
+
+            peer = new Peer(hostRoomId);
+
+            peer.on('open', (id) => {
+                document.getElementById('room-info-display').style.display = 'block';
+                document.getElementById('generated-code').textContent = id;
+                document.getElementById('waiting-status').textContent = "Waiting for opponent to connect...";
+            });
+
+            peer.on('connection', (conn) => {
+                connection = conn;
+                setupConnectionDataListeners();
+            });
+
+            peer.on('error', (err) => {
+                alert("Error setting up host room: " + err.type);
+                location.reload();
+            });
+        }
+
+        // ==========================================
+        // OPTION B: ACT AS JOINER
+        // ==========================================
+        function connectToHost() {
+            myName = document.getElementById('username').value.trim() || "Guest Player";
+            const targetRoomId = document.getElementById('join-room-id').value.trim();
+
+            if (!targetRoomId) {
+                alert("Please enter your friend's room code first!");
+                return;
+            }
 
             showScreen('waiting-screen');
+            document.getElementById('waiting-status').textContent = "Locating room code over peer network...";
 
-            // Initialize free tier fallback communication layer
-            pubnub = new PubNub({
-                publishKey: 'pub-c-4b5377f0-ca7d-4113-9a3d-4c74070a9314', // Public Demo Keys
-                subscribeKey: 'sub-c-4e78db5e-99bc-11ea-ab81-ba242cc3ff86',
-                userId: myId
+            peer = new Peer(); // Auto-assign random ID to self
+
+            peer.on('open', () => {
+                connection = peer.connect(targetRoomId);
+                setupConnectionDataListeners();
             });
 
-            pubnub.subscribe({ channels: [roomChannel] });
+            peer.on('error', (err) => {
+                alert("Could not connect to that room code. Check the spelling or if the room is active.");
+                location.reload();
+            });
+        }
 
-            pubnub.addListener({
-                message: function(event) {
-                    handleIncomingNetworkMessage(event.message);
-                }
+        // ==========================================
+        // DATA CHANNEL & GAME SYNC LOGIC
+        // ==========================================
+        function setupConnectionDataListeners() {
+            // Once peer connection successfully binds open
+            connection.on('open', () => {
+                // Instantly exchange names
+                connection.send({ type: 'HANDSHAKE', name: myName });
             });
 
-            // Announce presence every second until opponent replies
-            timerInterval = setInterval(() => {
-                broadcast({ type: "JOIN_PING", name: myName, senderId: myId });
-            }, 1000);
-        }
-
-        function broadcast(msg) {
-            pubnub.publish({ channel: roomChannel, message: msg });
-        }
-
-        function handleIncomingNetworkMessage(msg) {
-            if (msg.senderId === myId) return; // Skip own messages
-
-            switch(msg.type) {
-                case "JOIN_PING":
-                    opponentName = msg.name;
-                    clearInterval(timerInterval); // Stop pinging
-                    broadcast({ type: "JOIN_ACK", name: myName, senderId: myId });
+            // Monitor continuous score updates and messages
+            connection.on('data', (data) => {
+                if (data.type === 'HANDSHAKE') {
+                    opponentName = data.name;
                     startGameUi();
-                    break;
-
-                case "JOIN_ACK":
-                    opponentName = msg.name;
-                    clearInterval(timerInterval);
-                    startGameUi();
-                    break;
-
-                case "SCORE_UPDATE":
-                    oppScore = msg.score;
+                } else if (data.type === 'SCORE_UPDATE') {
+                    oppScore = data.score;
                     document.getElementById('opp-live-score').textContent = oppScore;
-                    if(msg.questionIndex === currentQuestionIndex) {
+                    if (data.questionIndex === currentQuestionIndex) {
                         opponentFinishedQuestion = true;
                         checkAdvanceCondition();
                     }
-                    break;
-            }
+                }
+            });
+
+            connection.on('close', () => {
+                alert("Opponent left the match.");
+                location.reload();
+            });
         }
 
         function startGameUi() {
-            if (document.getElementById('quiz-screen').classList.contains('active')) return; 
             document.getElementById('my-name-label').textContent = myName + " (You)";
             document.getElementById('opp-name-label').textContent = opponentName;
             showScreen('quiz-screen');
@@ -370,7 +424,7 @@
                 updateTimerBar();
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
-                    submitAnswer(-1); // Timeout
+                    submitAnswer(-1); // Automatically force skip due to timeout
                 }
             }, 1000);
         }
@@ -384,7 +438,7 @@
             clearInterval(timerInterval);
             answeredCurrentQuestion = true;
 
-            // Freeze choices
+            // Lock out interactive answer choices
             document.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
 
             const currentQ = quizData[currentQuestionIndex];
@@ -393,10 +447,9 @@
                 document.getElementById('my-live-score').textContent = myScore;
             }
 
-            // Instantly tell the opponent your new score status for this current question
-            broadcast({
-                type: "SCORE_UPDATE",
-                senderId: myId,
+            // Sync score across the direct P2P pipeline
+            connection.send({
+                type: 'SCORE_UPDATE',
                 score: myScore,
                 questionIndex: currentQuestionIndex
             });
@@ -406,7 +459,7 @@
         }
 
         function checkAdvanceCondition() {
-            // Move forward only when BOTH players have responded or timed out on this specific question
+            // Shift to next frame when both parties settle values
             if (answeredCurrentQuestion && opponentFinishedQuestion) {
                 currentQuestionIndex++;
                 setTimeout(() => {
@@ -415,7 +468,7 @@
                     } else {
                         endGame();
                     }
-                }, 1500); // Small brief delay so players see status
+                }, 1200); 
             }
         }
 
@@ -423,13 +476,13 @@
             showScreen('results-screen');
             let resultText = "";
             if (myScore > oppScore) {
-                resultText = `🏆 You won against ${opponentName}! (${myScore} vs ${oppScore})`;
+                resultText = `🏆 You won against ${opponentName}!\n(${myScore} vs ${oppScore})`;
             } else if (oppScore > myScore) {
-                resultText = `❌ ${opponentName} won! (${oppScore} vs ${myScore})`;
+                resultText = `❌ ${opponentName} won!\n(${oppScore} vs ${myScore})`;
             } else {
-                resultText = `🤝 It's a tie game! (${myScore} vs ${oppScore})`;
+                resultText = `🤝 It's a tie game!\n(${myScore} vs ${oppScore})`;
             }
-            document.getElementById('winner-text').textContent = resultText;
+            document.getElementById('winner-text').innerText = resultText;
         }
     </script>
 </body>
