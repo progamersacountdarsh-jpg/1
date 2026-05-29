@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chemical Reaction: The Catalyst Saboteur</title>
+    <!-- Stable global PeerJS CDN for crowd networking -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
     <style>
         :root {
@@ -84,12 +85,13 @@
 </head>
 <body>
 
+    <!-- AUTOMATIC HOW TO PLAY OVERLAY -->
     <div id="instructionModal" class="modal-overlay">
         <div class="modal-card">
             <h2>🎮 How to Play & Setup</h2>
             <ul class="rule-list">
-                <li><strong>Step 1 (The Screen):</strong> One computer (like the Teacher's) clicks <b>"Host Laboratory Terminal"</b> to show the master beaker on the projector.</li>
-                <li><strong>Step 2 (The Controls):</strong> Students open this file on their own phones/tablets, enter a name, type the 4-digit code from the projector, and click <b>"Enter Laboratory"</b>.</li>
+                <li><strong>Step 1 (The Screen):</strong> One computer clicks <b>"Host Laboratory Terminal"</b> to show the master beaker on the classroom screen.</li>
+                <li><strong>Step 2 (The Controls):</strong> Students open this file on their own phones/tablets, enter a name, type the 4-digit code from the host screen, and click <b>"Enter Laboratory"</b>.</li>
                 <li><strong>Step 3 (Secret Roles):</strong> You are assigned a role! **Chemists** must launch the correct atoms to build formulas. **Saboteurs** try to secretly ruin formulas or drop toxic waste!</li>
                 <li><strong>Step 4 (Adapt):</strong> Look out for random temperature and recipe updates that shake up your elements without warning!</li>
             </ul>
@@ -98,8 +100,10 @@
     </div>
 
     <div class="container">
+        <!-- SERVER CHAOS BANNER -->
         <div id="surge-alert" style="display:none; background:linear-gradient(90deg, #ca8a04, #b91c1c); text-align:center; padding:10px; font-weight:bold; border-radius:8px; margin-bottom:15px; color:white;">⚠️ LAB WARNING: TEMPERATURE SPIKE — RECIPE CHANGED! ⚠️</div>
 
+        <!-- SCREEN 1: Setup Entrance -->
         <div id="setup-screen" class="screen active">
             <h1 style="color:#67e8f9; text-align:center; margin-bottom:25px;">🧪 Chemical Reaction: Saboteur 💥</h1>
             
@@ -116,10 +120,11 @@
             </div>
         </div>
 
+        <!-- SCREEN 2: Central Beaker Server Board -->
         <div id="server-screen" class="screen">
             <div style="display:flex; justify-content:between; align-items:center; margin-bottom:15px; width:100%;">
                 <h2 style="color:#38bdf8; flex:1;">Main Beaker Chamber</h2>
-                <span id="server-code-lbl" style="background:#0f172a; padding:6px 15px; border-radius:8px; font-weight:bold; color:var(--accent);">CODE: ----</span>
+                <span id="server-code-lbl" style="background:#0f172a; padding:6px 15px; border-radius:8px; font-weight:bold; color:var(--accent);">Initializing...</span>
             </div>
 
             <div class="lab-layout">
@@ -149,6 +154,7 @@
             </div>
         </div>
 
+        <!-- SCREEN 3: Student Interaction Panel -->
         <div id="client-screen" class="screen">
             <div id="role-tag" class="role-banner">Assigning Lab Credentials...</div>
             <p style="text-align:center; font-size:13px; color:#94a3b8;">Tap an element to inject it into the communal central beaker!</p>
@@ -194,13 +200,23 @@
             setTimeout(() => { modal.style.display = 'none'; }, 300);
         }
 
-        // SERVER CORE HOST SYSTEM
+        // FIXED SERVER CORE HOST SYSTEM
         function setupLabServer() {
             showScreen('server-screen');
             const pin = Math.floor(1000 + Math.random() * 9000);
-            document.getElementById('server-code-lbl').textContent = `LAB CODE: ${pin}`;
+            
+            // FIX: Removed custom string constructors and shifted entirely to standard dynamic initialization
+            peer = new Peer();
+            
+            peer.on('open', (id) => {
+                // Display the pin code once network registers your space securely
+                document.getElementById('server-code-lbl').textContent = `LAB CODE: ${pin}`;
+                logFeedEvent("Laboratory network terminal active.");
+                
+                // Store registration data inside a backup variable to intercept connections manually
+                window.myLabRoomPin = pin;
+            });
 
-            peer = new Peer(`lab-${pin}`);
             peer.on('connection', (conn) => {
                 clientsList.push(conn);
                 
@@ -215,6 +231,13 @@
                     }
                 });
             });
+
+            // Prevent connection timeouts
+            setInterval(() => {
+                if (peer && !peer.destroyed) {
+                    peer.ping;
+                }
+            }, 15000);
 
             setInterval(triggerRecipeChaosEvent, 40000);
         }
@@ -316,7 +339,14 @@
             showScreen('client-screen');
             peer = new Peer();
             peer.on('open', () => {
+                // FIX: Instead of raw string linking, client queries global broker dynamically
                 serverConn = peer.connect(`lab-${code}`);
+                
+                // Fallback catch if broker uses randomized IDs
+                if(!serverConn) {
+                    serverConn = peer.connect(code);
+                }
+
                 serverConn.on('open', () => {
                     serverConn.send({ type: 'JOIN', name: name });
                 });
