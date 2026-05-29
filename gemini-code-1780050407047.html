@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flipkart Replica</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* --- Reset & Global Styles --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: #f1f2f6;
+            color: #212121;
+        }
+
+        /* --- Top Navigation Bar --- */
+        .top-navbar {
+            background-color: #ffffff;
+            padding: 12px 10%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 1px 0 rgba(0,0,0,.16);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        /* Left Section: Logo & Travel toggle */
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .brand-logo {
+            background-color: #ffe500;
+            padding: 8px 24px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            font-style: italic;
+            color: #047bd5;
+            font-size: 18px;
+            text-decoration: none;
+        }
+
+        .brand-logo i {
+            color: #047bd5;
+        }
+
+        .travel-tab {
+            background-color: #f0f2f5;
+            padding: 8px 20px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            color: #212121;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .travel-tab i {
+            color: #ff6f61;
+        }
+
+        /* Center Section: Search Bar */
+        .search-container {
+            flex: 1;
+            max-width: 600px;
+            margin: 0 30px;
+            position: relative;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 11px 16px 11px 45px;
+            border: 1px solid #2874f0;
+            border-radius: 8px;
+            background-color: #f0f5ff;
+            font-size: 14px;
+            color: #212121;
+            outline: none;
+        }
+
+        .search-bar::placeholder {
+            color: #717478;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #717478;
+            font-size: 16px;
+        }
+
+        /* Right Section: Actions & Utilities */
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .nav-location {
+            font-size: 12px;
+            color: #000;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .nav-location span {
+            color: #2874f0;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #212121;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .nav-item:hover {
+            background-color: #f0f5ff;
+        }
+
+        .nav-item i {
+            font-size: 16px;
+        }
+
+        /* --- Categories / Row Bar --- */
+        .categories-bar {
+            background-color: #ffffff;
+            padding: 15px 8%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e0e0e0;
+            overflow-x: auto;
+        }
+
+        .category-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: #212121;
+            font-size: 13px;
+            font-weight: 500;
+            min-width: 70px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .category-item i {
+            font-size: 24px;
+            color: #333;
+            /* Yellow accent color styling inspired by original icons */
+            background: linear-gradient(180deg, #333 70%, #ffe500 70%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Specific active layout for 'For You' */
+        .category-item.active {
+            color: #2874f0;
+            font-weight: 600;
+            border-bottom: 3px solid #2874f0;
+            padding-bottom: 4px;
+        }
+
+        .category-item.active i {
+            background: linear-gradient(180deg, #2874f0 70%, #ffe500 70%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 1024px) {
+            .top-navbar { padding: 12px 4%; }
+            .categories-bar { padding: 15px 4%; }
+        }
+
+        @media (max-width: 768px) {
+            .top-navbar { flex-wrap: wrap; gap: 10px; }
+            .search-container { order: 3; max-width: 100%; margin: 5px 0 0 0; }
+            .nav-right { gap: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="top-navbar">
+        <div class="nav-left">
+            <a href="#" class="brand-logo">
+                <i class="fa-solid fa-bolt"></i> Flipkart
+            </a>
+            <a href="#" class="travel-tab">
+                <i class="fa-solid fa-plane"></i> Travel
+            </a>
+        </div>
+
+        <div class="search-container">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input type="text" class="search-bar" placeholder="Search for Products, Brands and More">
+        </div>
+
+        <div class="nav-right">
+            <div class="nav-location">
+                <i class="fa-solid fa-location-dot"></i> Location not set <span>Select delivery location &gt;</span>
+            </div>
+            
+            <div class="nav-item">
+                <i class="fa-regular fa-user"></i>
+                Login <i class="fa-solid fa-angle-down" style="font-size: 10px;"></i>
+            </div>
+
+            <div class="nav-item">
+                More <i class="fa-solid fa-angle-down" style="font-size: 10px;"></i>
+            </div>
+
+            <a href="#" class="nav-item">
+                <i class="fa-solid fa-cart-shopping"></i> Cart
+            </a>
+        </div>
+    </header>
+
+    <nav class="categories-bar">
+        <a href="#" class="category-item active">
+            <i class="fa-solid fa-bag-shopping"></i>
+            <span>For You</span>
+        </a>
+        <a href="#" class="category-item">
+            <i class="fa-solid fa-shirt"></i>
+            <span>Fashion</span>
+        </a>
+        <a href="#" class="category-item">
+            <i class="fa-solid fa-mobile-screen-button"></i>
+            <span>Mobiles</span>
+        </a>
+        <a href="#" class="category-item">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            <span>Beauty</span>
+        </a>
+        <a href="#" class="category-item">
+            <i class="fa-solid fa-laptop"></i>
+            <span>Electronics</span>
+        </a>
+        <a href="#" class="category-item">
+            <i class="fa-solid fa-lamp"></i>
+            <span>Home</span>
+        </a>
+        <a href="#" class="category-item">
+            <i class="fa-solid fa-tv"></i>
+            <span>Appliances</span>
+        </a>
+        <a href="#" class="category-item">
+            <i class="fa-solid fa-teddy-bear"></i>
+            <span>Toys, baby...</span>
+        </a>
+        <a href="#" class="category-item">
+            <i class="fa-solid fa-jar"></i>
+            <span>Food & H...</span>
+        </a>
+        <a href="#" class="category-item">
+            <i class="fa-solid fa-motorcycle"></i>
+            <span>2 Wheelers</span>
+        </a>
+        <a href="#" class="category-item">
+            <i class="fa-solid fa-baseball-bat-ball"></i>
+            <span>Sports & ...</span>
+        </a>
+        <a href="#" class="category-item">
+            <i class="fa-solid fa-book"></i>
+            <span>Books & ...</span>
+        </a>
+        <a href="#" class="category-item">
+            <i class="fa-solid fa-couch"></i>
+            <span>Furniture</span>
+        </a>
+    </nav>
+
+</body>
+</html>
