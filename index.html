@@ -3,670 +3,500 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Class 6 Fast-Paced Dynamic Quiz</title>
+    <title>Eco-Grid: Resource Racer</title>
+    <!-- Stable global PeerJS CDN for instant direct multiplayer -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
     <style>
         :root {
-            --primary: #ff7675;
-            --secondary: #74b9ff;
-            --bg: #1e1b4b;
-            --card-bg: #2e2a72;
-            --text: #ffffff;
-            --success: #55efc4;
-            --error: #ff7675;
-            --warning: #fdcb6e;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --primary: #10b981;
+            --secondary: #3b82f6;
+            --text: #f8fafc;
+            --accent: #f59e0b;
+            --danger: #ef4444;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            user-select: none;
         }
 
         body {
-            background: linear-gradient(135deg, var(--bg), #4338ca);
+            background: linear-gradient(135deg, var(--bg), #1e1b4b);
             color: var(--text);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 15px;
         }
 
         .container {
             width: 100%;
-            max-width: 700px;
+            max-width: 650px;
             background: var(--card-bg);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 24px;
+            padding: 25px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            border: 2px solid rgba(255,255,255,0.05);
             position: relative;
-            overflow: hidden;
         }
 
-        .screen {
-            display: none;
-        }
-
-        .screen.active {
-            display: block;
-        }
+        .screen { display: none; }
+        .screen.active { display: block; }
 
         h1, h2 {
             text-align: center;
             margin-bottom: 20px;
-            color: #ffeaa7;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            color: #fef08a;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
 
-        .input-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--secondary);
-        }
-
+        .input-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: var(--secondary); font-weight: bold; }
         input {
-            width: 100%;
-            padding: 12px;
-            border-radius: 12px;
-            border: 3px solid var(--secondary);
-            background: rgba(255,255,255,0.1);
-            color: #fff;
-            font-size: 18px;
-            text-align: center;
-            outline: none;
+            width: 100%; padding: 14px; border-radius: 12px;
+            border: 3px solid var(--secondary); background: rgba(0,0,0,0.2);
+            color: #fff; font-size: 18px; text-align: center; outline: none;
         }
 
         button {
-            width: 100%;
-            padding: 15px;
-            background: #fdcb6e;
-            color: #2d3436;
-            border: none;
-            border-radius: 12px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.2s;
-            margin-top: 10px;
-            box-shadow: 0 4px 0 #b2bec3;
+            width: 100%; padding: 15px; background: var(--accent);
+            color: #0f172a; border: none; border-radius: 14px;
+            font-size: 18px; font-weight: bold; cursor: pointer;
+            transition: 0.2s; margin-top: 10px; box-shadow: 0 4px 0 #b45309;
+        }
+        button:hover { transform: translateY(-2px); filter: brightness(1.1); }
+        button:active { transform: translateY(2px); box-shadow: none; }
+
+        .divider { text-align: center; margin: 15px 0; font-weight: bold; color: #94a3b8; }
+
+        /* Scoreboard Header */
+        .scoreboard {
+            display: flex; justify-content: space-between;
+            background: rgba(0,0,0,0.3); padding: 15px;
+            border-radius: 16px; margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .score-box { text-align: center; flex: 1; }
+        .score-box:first-child { border-right: 1px solid rgba(255,255,255,0.1); }
+        .score-val { font-size: 28px; font-weight: bold; color: var(--primary); }
+
+        /* Level Alert Banner */
+        .alert-banner {
+            display: none; background: linear-gradient(90deg, #dc2626, #ea580c);
+            color: white; text-align: center; padding: 12px;
+            font-weight: bold; font-size: 18px; border-radius: 12px;
+            margin-bottom: 15px; animation: wobble 0.5s infinite alternate;
+        }
+        @keyframes wobble {
+            from { transform: rotate(-1deg); } to { transform: rotate(1deg); }
         }
 
-        button:hover {
-            transform: translateY(-2px);
-            filter: brightness(1.1);
+        /* Target Objective Panel */
+        .objective-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid var(--primary);
+            border-radius: 16px; padding: 15px;
+            text-align: center; margin-bottom: 20px;
         }
+        .objective-title { font-size: 15px; text-transform: uppercase; color: #94a3b8; letter-spacing: 1px; }
+        .objective-desc { font-size: 22px; font-weight: bold; color: #fff; margin-top: 5px; }
 
-        button:active {
-            transform: translateY(2px);
-            box-shadow: none;
+        /* Core Interactive Item Grid */
+        .item-grid {
+            display: grid; gap: 12px; margin-bottom: 20px;
+            perspective: 1000px;
         }
+        .grid-3x3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-4x4 { grid-template-columns: repeat(4, 1fr); }
 
-        .divider {
-            text-align: center;
-            margin: 15px 0;
-            color: #ffeaa7;
-            font-weight: bold;
+        .grid-item {
+            background: #334155; border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px; aspect-ratio: 1;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            cursor: pointer; transition: all 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
         }
+        .grid-item:hover { background: #475569; transform: scale(1.03); }
+        .grid-item:active { transform: scale(0.95); }
+        .grid-item.selected {
+            background: rgba(16, 185, 129, 0.2);
+            border: 3px solid var(--primary);
+        }
+        .item-emoji { font-size: 32px; margin-bottom: 4px; }
+        .item-name { font-size: 12px; text-align: center; color: #cbd5e1; font-weight: 500; }
 
-        .room-display {
+        .status-tag {
+            display: inline-block; padding: 4px 10px;
+            border-radius: 20px; font-size: 12px; margin-top: 5px;
             background: rgba(255,255,255,0.05);
-            padding: 15px;
-            border-radius: 12px;
-            text-align: center;
-            font-size: 18px;
-            margin-bottom: 20px;
-            border: 2px dashed #fdcb6e;
-        }
-
-        .room-code-highlight {
-            font-size: 28px;
-            font-weight: bold;
-            color: #55efc4;
-            letter-spacing: 2px;
-            display: block;
-            margin-top: 5px;
-        }
-
-        /* Live Scoreboards */
-        .live-scoreboard {
-            display: flex;
-            justify-content: space-between;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .score-box {
-            text-align: center;
-            flex: 1;
-        }
-
-        .score-box:first-child {
-            border-right: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .score-val {
-            font-size: 26px;
-            font-weight: bold;
-            color: #55efc4;
-        }
-
-        /* Difficulty Flasher Overlay Alert Banner */
-        .difficulty-banner {
-            display: none;
-            background: linear-gradient(90deg, #d63031, #e17055);
-            color: white;
-            text-align: center;
-            padding: 12px;
-            font-weight: bold;
-            font-size: 18px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            animation: pulse 0.6s infinite alternate;
-            border: 2px solid #ffeaa7;
-        }
-
-        @keyframes pulse {
-            from { transform: scale(0.98); opacity: 0.9; }
-            to { transform: scale(1.02); opacity: 1; }
-        }
-
-        /* Timer components */
-        .timer-container {
-            width: 100%;
-            height: 14px;
-            background: #333;
-            border-radius: 7px;
-            margin-bottom: 25px;
-            overflow: hidden;
-            border: 2px solid rgba(255,255,255,0.2);
-        }
-
-        .timer-bar {
-            width: 100%;
-            height: 100%;
-            background: #ff7675;
-            transition: width 1s linear;
-        }
-
-        /* Quiz Main Display Items */
-        .question-text {
-            font-size: 24px;
-            margin-bottom: 25px;
-            text-align: center;
-            font-weight: bold;
-            line-height: 1.4;
-        }
-
-        .options-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .option-btn {
-            background: var(--secondary);
-            color: #1e1b4b;
-            border: none;
-            padding: 16px;
-            border-radius: 12px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            text-align: left;
-            transition: 0.2s;
-            box-shadow: 0 4px 0 #0984e3;
-        }
-
-        .option-btn:hover:not(:disabled) {
-            filter: brightness(1.1);
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 12px;
-            margin-top: 5px;
-            background: rgba(255,255,255,0.1);
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <div id="difficulty-alert" class="difficulty-banner">⚠️ WARNING: DIFFICULTY LEVEL RISING! ⚠️</div>
+        <!-- SPEED ALERT BANNER -->
+        <div id="difficulty-alert" class="alert-banner">⚠️ LEVEL UP: GRID SIZE EXPANDING! ⚠️</div>
 
+        <!-- SCREEN 1: Connection Setup -->
         <div id="setup-screen" class="screen active">
-            <h1>🎒 Class 6 Adaptive Arena ✏️</h1>
+            <h1>🌿 Eco-Grid: Resource Racer ⚡</h1>
             <div class="input-group">
-                <label for="username">Your Nickname:</label>
-                <input type="text" id="username" placeholder="Type your name here...">
+                <label for="username">Pilot Nickname:</label>
+                <input type="text" id="username" placeholder="Enter your name...">
             </div>
-            
-            <hr style="opacity: 0.1; margin: 25px 0;">
-
-            <button onclick="initiateHost()">Option A: Create a New Room</button>
+            <hr style="opacity: 0.1; margin: 20px 0;">
+            <button onclick="createRoom()">Host New Match</button>
             <div class="divider">OR</div>
-            
             <div class="input-group">
-                <label for="join-room-id">Enter Friend's Room Code:</label>
-                <input type="text" id="join-room-id" placeholder="e.g., quiz-1234">
+                <label for="room-code-input">Enter Room Code:</label>
+                <input type="text" id="room-code-input" placeholder="e.g., race-1234">
             </div>
-            <button style="background: #a29bfe; color: #1e1b4b; box-shadow: 0 4px 0 #6c5ce7;" onclick="connectToHost()">Option B: Join Friend's Room</button>
+            <button style="background:#3b82f6; color:white; box-shadow:0 4px 0 #1d4ed8;" onclick="joinRoom()">Join Match</button>
         </div>
 
+        <!-- SCREEN 2: Lobby Waiting Area -->
         <div id="waiting-screen" class="screen">
-            <h2>Lobby Status</h2>
-            <div id="room-info-display" class="room-display" style="display:none;">
-                Tell your friend to enter this code:<br>
-                <span id="generated-code" class="room-code-highlight">---</span>
+            <h2>Lobby Operational</h2>
+            <div id="code-box-display" class="room-display" style="background:rgba(0,0,0,0.2); padding:20px; border-radius:12px; text-align:center; border:2px dashed var(--accent); margin-bottom:20px; display:none;">
+                Share this Room Code with your friend:<br>
+                <span id="display-code-id" style="font-size:32px; font-weight:bold; color:var(--primary); letter-spacing:2px;">---</span>
             </div>
-            <div style="text-align: center; font-style: italic; color: #ffeaa7;">Setting up network connection...</div>
+            <div id="lobby-status-text" style="text-align:center; font-style:italic; color:#a7f3d0;">Synchronizing quantum networks...</div>
         </div>
 
-        <div id="quiz-screen" class="screen">
-            <div class="live-scoreboard">
+        <!-- SCREEN 3: Active Grid Match -->
+        <div id="game-screen" class="screen">
+            <div class="scoreboard">
                 <div class="score-box">
-                    <div id="my-name-label" style="font-weight: bold;">You</div>
-                    <div class="score-val" id="my-live-score">0</div>
-                    <div id="my-status-tag" class="status-badge" style="color: #55efc4;">Playing</div>
+                    <div id="p1-label" style="font-weight:bold;">You</div>
+                    <div class="score-val" id="p1-score">0/10</div>
+                    <div id="p1-status" class="status-tag" style="color:var(--primary);">Racing</div>
                 </div>
                 <div class="score-box">
-                    <div id="opp-name-label" style="font-weight: bold;">Opponent</div>
-                    <div class="score-val" id="opp-live-score">0</div>
-                    <div id="opp-status-tag" class="status-badge" style="color: #74b9ff;">Playing</div>
+                    <div id="p2-label" style="font-weight:bold;">Opponent</div>
+                    <div class="score-val" id="p2-score">0/10</div>
+                    <div id="p2-status" class="status-tag" style="color:var(--secondary);">Racing</div>
                 </div>
             </div>
 
-            <div class="timer-container">
-                <div id="timer" class="timer-bar"></div>
+            <!-- Goal Indicator -->
+            <div class="objective-panel">
+                <div class="objective-title" id="objective-counter">Mission Objective (Collect 0/0)</div>
+                <div class="objective-desc" id="objective-instruction">Loading Next Command...</div>
             </div>
 
-            <div class="question-text" id="question-text">Generating fresh question...</div>
-            <div class="options-grid" id="options-container"></div>
+            <!-- Scramble Interactive Canvas -->
+            <div id="item-grid-canvas" class="item-grid grid-3x3"></div>
+            <button style="background: #ef4444; color:white; box-shadow: 0 4px 0 #b91c1c;" onclick="clearSelectedTaps()">Reset Selections</button>
         </div>
 
+        <!-- SCREEN 4: Real-time Race Finish Center -->
         <div id="results-screen" class="screen">
-            <h1>✨ Live Score Report ✨</h1>
-            <div class="live-scoreboard" style="background: rgba(255,255,255,0.05); margin: 25px 0;">
+            <h1>🏁 Race Report 🏁</h1>
+            <div class="scoreboard" style="background:rgba(255,255,255,0.03); margin:25px 0; padding:20px;">
                 <div class="score-box">
-                    <div id="res-my-name" style="font-weight: bold; font-size: 20px;">You</div>
-                    <div class="score-val" id="res-my-score" style="font-size: 42px;">0</div>
-                    <div id="res-my-tag" style="color: #55efc4; margin-top: 5px; font-weight: bold;">Finished</div>
+                    <div id="r-p1-name" style="font-weight:bold; font-size:18px;">You</div>
+                    <div class="score-val" id="r-p1-score" style="font-size:46px;">0</div>
+                    <div style="color:var(--primary); font-weight:bold; margin-top:5px;">Finished</div>
                 </div>
                 <div class="score-box">
-                    <div id="res-opp-name" style="font-weight: bold; font-size: 20px;">Opponent</div>
-                    <div class="score-val" id="res-opp-score" style="font-size: 42px;">0</div>
-                    <div id="res-opp-tag" style="color: #fdcb6e; margin-top: 5px; font-weight: bold;">Still Racing...</div>
+                    <div id="r-p2-name" style="font-weight:bold; font-size:18px;">Opponent</div>
+                    <div class="score-val" id="r-p2-score" style="font-size:46px;">0</div>
+                    <div id="r-p2-tag" style="color:var(--accent); font-weight:bold; margin-top:5px;">Harvesting...</div>
                 </div>
             </div>
-            <h2 id="winner-live-text" style="color: #ffeaa7; font-size: 26px; text-align: center; min-height: 40px; white-space: pre-wrap;"></h2>
-            <button onclick="location.reload()" style="background: #55efc4; box-shadow: 0 4px 0 #00b894; margin-top: 20px;">Back to Main Menu</button>
+            <h2 id="end-winner-banner" style="color:#fef08a; text-align:center; min-height:45px; white-space:pre-wrap;"></h2>
+            <button onclick="location.reload()" style="background:var(--primary); box-shadow:0 4px 0 #047857; margin-top:15px;">Main Menu</button>
         </div>
     </div>
 
     <script>
-        let peer = null;
-        let connection = null;
-        let myName = "";
-        let opponentName = "Opponent";
+        let peer = null, connection = null;
+        let myName = "", oppName = "Opponent";
+        let roundsCleared = 0;
+        const totalRoundsToWin = 10;
         
-        let currentQuestionIndex = 0;
-        const totalQuestionsPerMatch = 10; 
-        
-        let myScore = 0;
-        let oppScore = 0;
-        
-        let timeLeft = 10; 
-        let timerInterval;
-        let myFinished = false;
-        let oppFinished = false;
-        let currentQuestion = null;
+        let oppClearedCount = 0;
+        let myFinished = false, oppFinished = false;
 
-        let sessionQuestionSequence = [];
+        // Dataset of everything built cleanly around Class 6 Science curriculum
+        const itemDatabase = [
+            { name: "Plastic Bottle", emoji: "🧴", tags: ["non-biodegradable", "recyclable", "opaque"] },
+            { name: "Apple Peel", emoji: "🍏", tags: ["biodegradable", "organic"] },
+            { name: "Iron Nail", emoji: "📌", tags: ["magnetic", "conductor", "opaque"] },
+            { name: "Glass Window", emoji: "🪟", tags: ["transparent", "insulator"] },
+            { name: "Solar Panel", emoji: "☀️", tags: ["renewable"] },
+            { name: "Coal Chunk", emoji: "🪨", tags: ["non-renewable", "opaque"] },
+            { name: "Paper Bag", emoji: "🛍️", tags: ["biodegradable", "recyclable"] },
+            { name: "Copper Wire", emoji: "🔌", tags: ["conductor", "opaque"] },
+            { name: "Dry Autumn Leaf", emoji: "🍂", tags: ["biodegradable", "organic"] },
+            { name: "Aluminum Can", emoji: "🥫", tags: ["recyclable", "conductor", "opaque"] },
+            { name: "Steel Spoon", emoji: "🥄", tags: ["magnetic", "conductor", "opaque"] },
+            { name: "Rubber Band", emoji: "🪵", tags: ["insulator", "elastic"] },
+            { name: "Oiled Paper", emoji: "📜", tags: ["translucent"] },
+            { name: "Wind Turbine", emoji: "💨", tags: ["renewable"] },
+            { name: "Crude Oil", emoji: "🛢️", tags: ["non-renewable"] },
+            { name: "Cardboard", emoji: "📦", tags: ["biodegradable", "recyclable", "opaque"] }
+        ];
 
-        function buildUniqueMatchSequence() {
-            const basicCategories = [
-                'math_perimeter', 'math_prime', 'math_fraction', 'math_ratio', 
-                'science_water', 'science_materials', 'science_magnets', 
-                'geo_planets', 'geo_lines', 'geo_rotation'
-            ];
-            let pool = [];
-            while(pool.length < totalQuestionsPerMatch) {
-                let batch = [...basicCategories].sort(() => Math.random() - 0.5);
-                pool = pool.concat(batch);
-            }
-            sessionQuestionSequence = pool.slice(0, totalQuestionsPerMatch);
-        }
+        const matchCategories = [
+            { label: "Biodegradable Items", tag: "biodegradable" },
+            { label: "Electrical Conductors", tag: "conductor" },
+            { label: "Magnetic Objects", tag: "magnetic" },
+            { label: "Non-Renewable Fuel sources", tag: "non-renewable" },
+            { label: "Opaque Materials", tag: "opaque" },
+            { label: "Renewable Energy Items", tag: "renewable" },
+            { label: "Recyclable Products", tag: "recyclable" },
+            { label: "Electrical Insulators", tag: "insulator" }
+        ];
 
-        function generateDynamicQuestion(index) {
-            const chosenType = sessionQuestionSequence[index];
-            const difficultyTier = Math.floor(index / 2) + 1; 
+        let currentTargetTag = "";
+        let requiredTargetCount = 0;
+        let selectedIndices = [];
+        let itemsOnGrid = [];
 
-            let q = "";
-            let options = [];
-            let correct = 0;
-
-            switch(chosenType) {
-                case 'math_perimeter': {
-                    const baseMultiplier = difficultyTier * 8; 
-                    const side = Math.floor(Math.random() * 12) + baseMultiplier;
-                    
-                    const shapes = [
-                        { name: "square", mult: 4 },
-                        { name: "regular triangle", mult: 3 },
-                        { name: "regular pentagon", mult: 5 },
-                        { name: "regular hexagon", mult: 6 }
-                    ];
-                    const targetShape = shapes[Math.floor(Math.random() * shapes.length)];
-                    const ans = side * targetShape.mult;
-
-                    q = `[Tier ${difficultyTier}] Find the perimeter of a ${targetShape.name} if each side measures exactly ${side} cm.`;
-                    options = [`${ans - targetShape.mult} cm`, `${ans} cm`, `${ans + side} cm`].sort(() => Math.random() - 0.5);
-                    correct = options.indexOf(`${ans} cm`);
-                    break;
-                }
-                case 'math_prime': {
-                    let primesPool = [];
-                    if (difficultyTier <= 2) {
-                        primesPool = [2, 3, 5, 7, 11, 13, 17, 19];
-                    } else {
-                        primesPool = [43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97];
-                    }
-                    const targetPrime = primesPool[Math.floor(Math.random() * primesPool.length)];
-                    q = `[Tier ${difficultyTier}] Identify the hidden Prime Number among the choices below:`;
-                    options = [targetPrime, targetPrime + 1, targetPrime - 1].sort(() => Math.random() - 0.5);
-                    options = [...new Set(options)];
-                    while(options.length < 3) { options.push(targetPrime + 4); }
-                    correct = options.indexOf(targetPrime);
-                    break;
-                }
-                case 'math_fraction': {
-                    if (difficultyTier <= 2) {
-                        q = `[Tier ${difficultyTier}] A fraction where the top numerator is greater than the bottom denominator is known as an...`;
-                        options = ["Proper Fraction", "Improper Fraction", "Mixed Fraction"];
-                        correct = 1;
-                    } else {
-                        q = `[Tier ${difficultyTier}] Convert the fraction 3/5 into its exact matching decimal values:`;
-                        options = ["0.35", "0.6", "0.06", "3.5"].sort(() => Math.random() - 0.5);
-                        correct = options.indexOf("0.6");
-                    }
-                    break;
-                }
-                case 'math_ratio': {
-                    const multi = difficultyTier * 3;
-                    const boys = 4 * multi; 
-                    const girls = 3 * multi; 
-                    q = `[Tier ${difficultyTier}] A Class 6 study team has ${boys} boys and ${girls} girls. What is the ratio of boys to girls in simplest form?`;
-                    options = ["4:3", "3:4", `${boys}:${girls}`].sort(() => Math.random() - 0.5);
-                    correct = options.indexOf("4:3");
-                    break;
-                }
-                case 'science_water': {
-                    if (difficultyTier <= 2) {
-                        q = `[Tier ${difficultyTier}] What is the primary process called when water changes into gas vapor?`;
-                        options = ["Evaporation", "Condensation", "Precipitation"];
-                        correct = 0;
-                    } else {
-                        q = `[Tier ${difficultyTier}] Plants transpire excess water vapor into the atmosphere via tiny leaf microscopic openings called...`;
-                        options = ["Stomata", "Chlorophyll", "Root Hairs", "Xylem"].sort(() => Math.random() - 0.5);
-                        correct = options.indexOf("Stomata");
-                    }
-                    break;
-                }
-                case 'science_materials': {
-                    if (difficultyTier <= 2) {
-                        q = `[Tier ${difficultyTier}] Materials that completely block light transmissions are classified as:`;
-                        options = ["Transparent", "Opaque", "Translucent"];
-                        correct = 1;
-                    } else {
-                        q = `[Tier ${difficultyTier}] Which type of component change happens when paper burns into completely fresh ash?`;
-                        options = ["Physical Change", "Chemical Change", "Reversible Change"].sort(() => Math.random() - 0.5);
-                        correct = options.indexOf("Chemical Change");
-                    }
-                    break;
-                }
-                case 'science_magnets': {
-                    if (difficultyTier <= 2) {
-                        q = `[Tier ${difficultyTier}] Like poles of two separate magnets will always...`;
-                        options = ["Repel each other", "Attract each other", "Rotate endlessly"];
-                        correct = 0;
-                    } else {
-                        q = `[Tier ${difficultyTier}] Which of the following elements is highly magnetic and easily attracted to a permanent magnet bar?`;
-                        options = ["Copper", "Aluminum", "Iron", "Gold"].sort(() => Math.random() - 0.5);
-                        correct = options.indexOf("Iron");
-                    }
-                    break;
-                }
-                case 'geo_planets': {
-                    if (difficultyTier <= 2) {
-                        q = `[Tier ${difficultyTier}] Which inner rocky world is commonly called the Red Planet?`;
-                        options = ["Venus", "Mars", "Mercury"];
-                        correct = 1;
-                    } else {
-                        q = `[Tier ${difficultyTier}] Which outer planet has the most extensive, bright ice ring system visible from space?`;
-                        options = ["Jupiter", "Saturn", "Neptune", "Uranus"].sort(() => Math.random() - 0.5);
-                        correct = options.indexOf("Saturn");
-                    }
-                    break;
-                }
-                case 'geo_lines': {
-                    if (difficultyTier <= 2) {
-                        q = `[Tier ${difficultyTier}] Name the primary 0° reference line running horizontally around the middle of Earth:`;
-                        options = ["The Equator", "The Prime Meridian", "Tropic of Capricorn"];
-                        correct = 0;
-                    } else {
-                        q = `[Tier ${difficultyTier}] What specific latitude angle location defines the Tropic of Cancer in the northern hemisphere?`;
-                        options = ["23.5° North", "23.5° South", "66.5° North", "0°"].sort(() => Math.random() - 0.5);
-                        correct = options.indexOf("23.5° North");
-                    }
-                    break;
-                }
-                case 'geo_rotation': {
-                    if (difficultyTier <= 2) {
-                        q = `[Tier ${difficultyTier}] The daily rotational spinning loop of the planet on its axis directly creates:`;
-                        options = ["The 4 Seasons", "Day and Night", "Ocean tides"];
-                        correct = 1;
-                    } else {
-                        q = `[Tier ${difficultyTier}] The precise complete period required for Earth to finish one full orbital revolution around the Sun is:`;
-                        options = ["24 Hours", "30 Days", "365.25 Days", "28 Days"].sort(() => Math.random() - 0.5);
-                        correct = options.indexOf("365.25 Days");
-                    }
-                    break;
-                }
-            }
-
-            return { q, options, correct };
-        }
-
-        function showScreen(screenId) {
+        function showScreen(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
+            document.getElementById(id).classList.add('active');
         }
 
-        function initiateHost() {
-            myName = document.getElementById('username').value.trim() || "Host Player";
+        // Network Rooms setup
+        function createRoom() {
+            myName = document.getElementById('username').value.trim() || "Host Alpha";
             showScreen('waiting-screen');
+            const code = Math.floor(1000 + Math.random() * 9000);
+            const fullId = `race-${code}`;
 
-            const randomCode = Math.floor(1000 + Math.random() * 9000);
-            const hostRoomId = `quiz-${randomCode}`;
-
-            peer = new Peer(hostRoomId);
+            peer = new Peer(fullId);
             peer.on('open', (id) => {
-                document.getElementById('room-info-display').style.display = 'block';
-                document.getElementById('generated-code').textContent = id;
+                document.getElementById('code-box-display').style.display = 'block';
+                document.getElementById('display-code-id').textContent = id;
             });
             peer.on('connection', (conn) => {
                 connection = conn;
-                setupConnectionListeners();
+                bindNetworkEvents();
             });
         }
 
-        function connectToHost() {
-            myName = document.getElementById('username').value.trim() || "Guest Player";
-            const targetRoomId = document.getElementById('join-room-id').value.trim();
-
-            if (!targetRoomId) {
-                alert("Please type your friend's room code first!");
-                return;
-            }
+        function joinRoom() {
+            myName = document.getElementById('username').value.trim() || "Racer Beta";
+            const code = document.getElementById('room-code-input').value.trim();
+            if(!code) return alert("Type the code first!");
 
             showScreen('waiting-screen');
-            peer = new Peer(); 
+            peer = new Peer();
             peer.on('open', () => {
-                connection = peer.connect(targetRoomId);
-                setupConnectionListeners();
-            });
-            peer.on('error', () => {
-                alert("Room not found! Check numbers and try again.");
-                location.reload();
+                connection = peer.connect(code);
+                bindNetworkEvents();
             });
         }
 
-        function setupConnectionListeners() {
+        function bindNetworkEvents() {
             connection.on('open', () => {
-                buildUniqueMatchSequence();
-                connection.send({ type: 'HANDSHAKE', name: myName });
+                connection.send({ type: 'WELCOME', name: myName });
             });
-
             connection.on('data', (data) => {
-                if (data.type === 'HANDSHAKE') {
-                    opponentName = data.name;
-                    startGameUi();
-                } else if (data.type === 'SCORE_UPDATE') {
-                    oppScore = data.score;
-                    document.getElementById('opp-live-score').textContent = oppScore;
-                    document.getElementById('res-opp-score').textContent = oppScore;
-                    if (data.finished) {
+                if(data.type === 'WELCOME') {
+                    oppName = data.name;
+                    launchMatchUi();
+                } else if(data.type === 'PROGRESS') {
+                    oppClearedCount = data.count;
+                    document.getElementById('p2-score').textContent = `${oppClearedCount}/${totalRoundsToWin}`;
+                    document.getElementById('r-p2-score').textContent = oppClearedCount;
+                    if(data.finished) {
                         oppFinished = true;
-                        document.getElementById('opp-status-tag').textContent = "Finished";
-                        document.getElementById('opp-status-tag').style.color = "#ff7675";
-                        document.getElementById('res-opp-tag').textContent = "Finished";
-                        document.getElementById('res-opp-tag').style.color = "#55efc4";
+                        document.getElementById('p2-status').textContent = "Finished";
+                        document.getElementById('r-p2-tag').textContent = "Finished";
                     }
-                    updateWinnerDisplayText();
-                } else if (data.type === 'DIFFICULTY_UP') {
-                    triggerDifficultyBannerFlash();
+                    liveCalculateScoreEnd();
+                } else if(data.type === 'HARDNESS_ALERT') {
+                    triggerAlertBanner();
                 }
             });
         }
 
-        function startGameUi() {
-            document.getElementById('my-name-label').textContent = myName;
-            document.getElementById('res-my-name').textContent = myName;
-            document.getElementById('opp-name-label').textContent = opponentName;
-            document.getElementById('res-opp-name').textContent = opponentName;
-            showScreen('quiz-screen');
-            loadQuestion();
+        function launchMatchUi() {
+            document.getElementById('p1-label').textContent = myName;
+            document.getElementById('r-p1-name').textContent = myName;
+            document.getElementById('p2-label').textContent = oppName;
+            document.getElementById('r-p2-name').textContent = oppName;
+            showScreen('game-screen');
+            loadNewMissionRound();
         }
 
-        function loadQuestion() {
-            if (currentQuestionIndex > 0 && currentQuestionIndex % 2 === 0) {
-                triggerDifficultyBannerFlash();
-                connection.send({ type: 'DIFFICULTY_UP' });
+        // Core Mission Setup Logic
+        function loadNewMissionRound() {
+            selectedIndices = [];
+            
+            // Check difficulty step: rounds 1-4 are 3x3 grid, rounds 5+ expand to 4x4 grid
+            let isHardTier = (roundsCleared >= 4);
+            let gridSize = isHardTier ? 16 : 9;
+
+            if(roundsCleared > 0 && roundsCleared % 2 === 0 && selectedIndices.length === 0) {
+                // If we just advanced up past an even round boundary, show warning
+                triggerAlertBanner();
+                connection.send({ type: 'HARDNESS_ALERT' });
             }
 
-            timeLeft = 10; 
-            currentQuestion = generateDynamicQuestion(currentQuestionIndex);
-            
-            document.getElementById('question-text').textContent = `Q${currentQuestionIndex + 1}/${totalQuestionsPerMatch}: ${currentQuestion.q}`;
+            const canvas = document.getElementById('item-grid-canvas');
+            if(isHardTier) {
+                canvas.className = "item-grid grid-4x4";
+            } else {
+                canvas.className = "item-grid grid-3x3";
+            }
 
-            const container = document.getElementById('options-container');
-            container.innerHTML = "";
+            // Shuffle and slice items for the grid assignment
+            let shuffledPool = [...itemDatabase].sort(() => Math.random() - 0.5);
+            itemsOnGrid = shuffledPool.slice(0, gridSize);
 
-            currentQuestion.options.forEach((opt, idx) => {
-                const btn = document.createElement('button');
-                btn.className = "option-btn";
-                btn.textContent = opt;
-                btn.onclick = () => submitAnswer(idx);
-                container.appendChild(btn);
+            // Select a valid scoring category that definitely exists inside our current active grid subset
+            let validCategories = matchCategories.filter(cat => {
+                return itemsOnGrid.filter(item => item.tags.includes(cat.tag)).length >= 2;
             });
+            
+            // Fallback safety if random slice is too barren
+            let activeCategory = validCategories.length > 0 ? validCategories[Math.floor(Math.random() * validCategories.length)] : matchCategories[0];
+            
+            currentTargetTag = activeCategory.tag;
+            
+            // Calculate total correct choices present on grid
+            let totalCorrectOnGrid = itemsOnGrid.filter(item => item.tags.includes(currentTargetTag)).length;
+            
+            // Goal is either collect all of them or a max cap of 3
+            requiredTargetCount = Math.min(totalCorrectOnGrid, 3);
 
-            startTimer();
+            // Render text layouts
+            document.getElementById('objective-counter').textContent = `Progress: ${roundsCleared}/${totalRoundsToWin} Rounds | Target: Find ${requiredTargetCount}`;
+            document.getElementById('objective-instruction').textContent = `Tap ${requiredTargetCount} [${activeCategory.label}]!`;
+
+            renderGridElements();
         }
 
-        function triggerDifficultyBannerFlash() {
+        function renderGridElements() {
+            const canvas = document.getElementById('item-grid-canvas');
+            canvas.innerHTML = "";
+
+            itemsOnGrid.forEach((item, index) => {
+                const cell = document.createElement('div');
+                cell.className = "grid-item";
+                cell.id = `cell-${index}`;
+                
+                const emojiSpan = document.createElement('span');
+                emojiSpan.className = "item-emoji";
+                emojiSpan.textContent = item.emoji;
+
+                const nameSpan = document.createElement('span');
+                nameSpan.className = "item-name";
+                nameSpan.textContent = item.name;
+
+                cell.appendChild(emojiSpan);
+                cell.appendChild(nameSpan);
+                
+                cell.onclick = () => handleItemTap(index);
+                canvas.appendChild(cell);
+            });
+        }
+
+        function handleItemTap(index) {
+            const cell = document.getElementById(`cell-${index}`);
+            
+            if(selectedIndices.includes(index)) {
+                // Deselect if already chosen
+                selectedIndices = selectedIndices.filter(i => i !== index);
+                cell.classList.remove('selected');
+            } else {
+                // Select item
+                if(selectedIndices.length < requiredTargetCount) {
+                    selectedIndices.push(index);
+                    cell.classList.add('selected');
+                }
+            }
+
+            // Check if player selected the target capacity requested
+            if(selectedIndices.length === requiredTargetCount) {
+                verifySelectionAnswers();
+            }
+        }
+
+        function clearSelectedTaps() {
+            selectedIndices = [];
+            document.querySelectorAll('.grid-item').forEach(el => el.classList.remove('selected'));
+        }
+
+        function verifySelectionAnswers() {
+            // Check if all selected indices fit the current target logic tags
+            let totalCorrectValidated = 0;
+            selectedIndices.forEach(idx => {
+                if(itemsOnGrid[idx].tags.includes(currentTargetTag)) {
+                    totalCorrectValidated++;
+                }
+            });
+
+            if(totalCorrectValidated === requiredTargetCount) {
+                // Success! Progress match upwards
+                roundsCleared++;
+                document.getElementById('p1-score').textContent = `${roundsCleared}/${totalRoundsToWin}`;
+                document.getElementById('r-p1-score').textContent = roundsCleared;
+
+                myFinished = (roundsCleared >= totalRoundsToWin);
+
+                // Sync counts to network immediately
+                connection.send({
+                    type: 'PROGRESS',
+                    count: roundsCleared,
+                    finished: myFinished
+                });
+
+                if(!myFinished) {
+                    loadNewMissionRound();
+                } else {
+                    document.getElementById('p1-status').textContent = "Finished";
+                    showScreen('results-screen');
+                    liveCalculateScoreEnd();
+                }
+            } else {
+                // Mistake! Flash warning color adjustments and reset taps automatically
+                selectedIndices.forEach(idx => {
+                    const el = document.getElementById(`cell-${idx}`);
+                    if(el) el.style.background = "#b91c1c";
+                });
+                setTimeout(() => {
+                    loadNewMissionRound(); // reload and reshuffle grid penalties
+                }, 600);
+            }
+        }
+
+        function triggerAlertBanner() {
             const banner = document.getElementById('difficulty-alert');
             banner.style.display = 'block';
-            setTimeout(() => {
-                banner.style.display = 'none';
-            }, 3000); 
+            setTimeout(() => { banner.style.display = 'none'; }, 2500);
         }
 
-        function startTimer() {
-            clearInterval(timerInterval);
-            updateTimerBar();
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                updateTimerBar();
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    submitAnswer(-1); 
-                }
-            }, 1000);
-        }
-
-        function updateTimerBar() {
-            const percentage = (timeLeft / 10) * 100; 
-            document.getElementById('timer').style.width = `${percentage}%`;
-        }
-
-        function submitAnswer(selectedIndex) {
-            clearInterval(timerInterval);
-
-            if (selectedIndex === currentQuestion.correct) {
-                myScore += 10;
-                document.getElementById('my-live-score').textContent = myScore;
-                document.getElementById('res-my-score').textContent = myScore;
-            }
-
-            currentQuestionIndex++;
-            myFinished = (currentQuestionIndex >= totalQuestionsPerMatch);
-
-            connection.send({
-                type: 'SCORE_UPDATE',
-                score: myScore,
-                finished: myFinished
-            });
-
-            if (!myFinished) {
-                loadQuestion();
-            } else {
-                document.getElementById('my-status-tag').textContent = "Finished";
-                showScreen('results-screen');
-                updateWinnerDisplayText();
-            }
-        }
-
-        function updateWinnerDisplayText() {
-            const winLabel = document.getElementById('winner-live-text');
+        function liveCalculateScoreEnd() {
+            const banner = document.getElementById('end-winner-banner');
             
-            if (myFinished && oppFinished) {
-                if (myScore > oppScore) {
-                    winLabel.innerText = `👑 Match Over: You Won!\n🥇 Final Score: ${myScore} to ${oppScore}`;
-                    winLabel.style.color = "#55efc4";
-                } else if (oppScore > myScore) {
-                    winLabel.innerText = `🎉 Match Over: ${opponentName} Wins!\n🥈 Final Score: ${oppScore} to ${myScore}`;
-                    winLabel.style.color = "#ff7675";
+            if(myFinished && oppFinished) {
+                if(roundsCleared > oppClearedCount) {
+                    banner.innerText = `👑 Victory achieved!\n🥇 You sorted resources faster than ${oppName}!`;
+                    banner.style.color = "#10b981";
+                } else if(oppClearedCount > roundsCleared) {
+                    banner.innerText = `🎉 ${oppName} Wins!\n🥈 Better luck next sorting run!`;
+                    banner.style.color = "#ef4444";
                 } else {
-                    winLabel.innerText = `🤝 Match Over: It's a Tie!\nScore: ${myScore} - ${oppScore}`;
-                    winLabel.style.color = "#ffeaa7";
+                    banner.innerText = `🤝 Stellar Synchronization!\nIt's a complete tie score!`;
+                    banner.style.color = "#fef08a";
                 }
-            } else if (myFinished && !oppFinished) {
-                winLabel.innerText = `You finished! Current Standings:\nYou: ${myScore} pts | ${opponentName}: ${oppScore} pts\n(Keep tracking, your friend is still solving...)`;
-                winLabel.style.color = "#fdcb6e";
+            } else if(myFinished && !oppFinished) {
+                banner.innerText = `You finished your 10 rounds!\nYour Time: Finished | ${oppName} Progress: ${oppClearedCount}/10\n(Watch closely, your opponent is still tapping resources...)`;
+                banner.style.color = "#f59e0b";
             }
         }
     </script>
