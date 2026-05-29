@@ -3,374 +3,278 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chemical Reaction: The Catalyst Saboteur</title>
-    <!-- Stable global PeerJS CDN for crowd networking -->
+    <title>Velocity Sprint: The Kinetic Race</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
     <style>
         :root {
-            --bg: #0f172a;
-            --card: #1e293b;
-            --electric: #38bdf8;
-            --accent: #f59e0b;
-            --danger: #ef4444;
-            --success: #10b981;
+            --bg: #090d16;
+            --card: #111827;
+            --neon-blue: #06b6d4;
+            --neon-green: #10b981;
+            --neon-pink: #f43f5e;
+            --amber: #f59e0b;
             --text: #f3f4f6;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; user-select: none; }
-        body { background: radial-gradient(circle, #1e1b4b, var(--bg)); color: var(--text); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 10px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; user-select: none; }
+        body { background: radial-gradient(circle at center, #1e1b4b, var(--bg)); color: var(--text); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 15px; }
         
-        .container { width: 100%; max-width: 750px; background: var(--card); border-radius: 20px; padding: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); border: 2px solid #334155; }
+        .container { width: 100%; max-width: 800px; background: var(--card); border-radius: 24px; padding: 25px; box-shadow: 0 25px 50px rgba(0,0,0,0.6); border: 2px solid #1f2937; position: relative; }
         .screen { display: none; }
         .screen.active { display: block; }
 
-        input { width: 100%; padding: 12px; border-radius: 8px; border: 2px solid var(--electric); background: rgba(0,0,0,0.3); color: white; font-size: 16px; margin-bottom: 15px; text-align: center; outline: none; }
-        button { width: 100%; padding: 14px; background: var(--accent); color: #0f172a; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 #b45309; margin-bottom: 10px; }
+        input { width: 100%; padding: 14px; border-radius: 12px; border: 2px solid var(--neon-blue); background: rgba(0,0,0,0.4); color: white; font-size: 16px; margin-bottom: 15px; text-align: center; outline: none; }
+        button { width: 100%; padding: 15px; background: var(--amber); color: #090d16; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 #b45309; margin-bottom: 12px; transition: all 0.1s; }
         button:active { transform: translateY(2px); box-shadow: none; }
 
-        /* --- HOW TO PLAY MODAL SYSTEM --- */
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(11, 15, 25, 0.95);
-            backdrop-filter: blur(8px);
-            display: flex; justify-content: center; align-items: center;
-            z-index: 9999;
-            opacity: 1; transition: opacity 0.3s ease;
-        }
+        /* INSTRUCTION POPUP MODAL */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5,7,12,0.95); backdrop-filter: blur(10px); display: flex; justify-content: center; align-items: center; z-index: 9999; transition: opacity 0.3s ease; }
+        .modal-card { background: #1f2937; border: 2px solid var(--neon-blue); border-radius: 20px; padding: 30px; width: 90%; max-width: 520px; box-shadow: 0 0 30px rgba(6,182,212,0.3); }
 
-        .modal-card {
-            background: #1e293b;
-            border: 2px solid #38bdf8;
-            box-shadow: 0 0 25px rgba(56, 189, 248, 0.2);
-            width: 90%; max-width: 500px;
-            border-radius: 16px; padding: 25px;
-            animation: scaleUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
+        /* THE LIVE TRACK (SERVER VIEW) */
+        .track-container { background: #030712; border: 3px solid #374151; border-radius: 16px; padding: 15px; margin-bottom: 20px; position: relative; overflow: hidden; }
+        .race-lane { height: 45px; border-bottom: 1px dashed #1f2937; position: relative; display: flex; align-items: center; }
+        .racer-car { position: absolute; left: 0; font-size: 26px; transition: left 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1); display: flex; align-items: center; }
+        .racer-name { position: absolute; top: -12px; font-size: 10px; background: rgba(0,0,0,0.8); color: #fff; padding: 2px 6px; border-radius: 4px; white-space: nowrap; }
+        .finish-line { position: absolute; right: 15px; top: 0; bottom: 0; width: 10px; background: repeating-linear-gradient(0deg, #fff, #fff 10px, #000 10px, #000 20px); opacity: 0.3; }
 
-        @keyframes scaleUp {
-            from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
+        /* CONTROLLER INTERFACE */
+        .quiz-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px; }
+        .opt-btn { background: #1e2937; border: 2px solid #4b5563; color: white; padding: 20px; border-radius: 14px; font-size: 15px; text-align: center; cursor: pointer; box-shadow: 0 5px 0 #111827; }
+        .opt-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #111827; }
 
-        .modal-card h2 { color: #f59e0b; text-align: center; margin-bottom: 15px; }
-        .rule-list { margin: 20px 0; padding-left: 20px; }
-        .rule-list li { margin-bottom: 12px; font-size: 15px; line-height: 1.5; color: #f3f4f6; }
-        
-        .close-modal-btn {
-            width: 100%; padding: 12px; background: #10b981;
-            color: #0f172a; border: none; border-radius: 8px;
-            font-size: 16px; font-weight: bold; cursor: pointer;
-            box-shadow: 0 4px 0 #047857; transition: 0.1s;
-        }
-        .close-modal-btn:active { transform: translateY(2px); box-shadow: none; }
-
-        /* HOST SERVER SCREEN VISUALS */
-        .lab-layout { display: grid; grid-template-columns: 1.8fr 1.2fr; gap: 20px; }
-        .beaker-display { background: #020617; border: 4px solid #475569; border-radius: 0 0 40px 40px; position: relative; height: 300px; overflow: hidden; box-shadow: inset 0 -20px 50px rgba(56,189,248,0.1); }
-        .fluid-line { position: absolute; bottom: 0; left: 0; width: 100%; height: 40%; background: rgba(14,165,233,0.2); transition: all 0.5s ease; }
-        
-        .atom { position: absolute; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; color: white; animation: float 3s infinite alternate ease-in-out; }
-        @keyframes float { from { transform: translateY(0) rotate(0deg); } to { transform: translateY(-15px) rotate(20deg); } }
-
-        .recipe-card { background: #0f172a; border-left: 5px solid var(--electric); padding: 12px; border-radius: 6px; margin-bottom: 15px; }
-
-        /* STUDENT CONTROLLER VISUALS */
-        .role-banner { text-align: center; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-weight: bold; font-size: 18px; }
-        .element-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px; }
-        .element-card { background: #334155; border: 2px solid #475569; border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; box-shadow: 0 6px 0 #1e293b; }
-        .element-card:active { transform: translateY(4px); box-shadow: 0 2px 0 #1e293b; }
-        .element-sym { font-size: 32px; font-weight: bold; display: block; margin-bottom: 5px; }
+        #env-banner { display: none; background: linear-gradient(90deg, #7c3aed, #db2777); text-align: center; padding: 12px; font-weight: bold; border-radius: 10px; margin-bottom: 15px; animation: flash 1s infinite alternate; }
+        @keyframes flash { from { opacity: 0.8; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <!-- AUTOMATIC HOW TO PLAY OVERLAY -->
-    <div id="instructionModal" class="modal-overlay">
+    <div id="rulesModal" class="modal">
         <div class="modal-card">
-            <h2>🎮 How to Play & Setup</h2>
-            <ul class="rule-list">
-                <li><strong>Step 1 (The Screen):</strong> One computer clicks <b>"Host Laboratory Terminal"</b> to show the master beaker on the classroom screen.</li>
-                <li><strong>Step 2 (The Controls):</strong> Students open this file on their own phones/tablets, enter a name, type the 4-digit code from the host screen, and click <b>"Enter Laboratory"</b>.</li>
-                <li><strong>Step 3 (Secret Roles):</strong> You are assigned a role! **Chemists** must launch the correct atoms to build formulas. **Saboteurs** try to secretly ruin formulas or drop toxic waste!</li>
-                <li><strong>Step 4 (Adapt):</strong> Look out for random temperature and recipe updates that shake up your elements without warning!</li>
+            <h2 style="color:var(--amber); text-align:center; margin-bottom:15px;">🏎️ Velocity Sprint: Racetrack Rules</h2>
+            <p style="font-size:14px; color:#9ca3af; line-height:1.6; margin-bottom:20px;">
+                Welcome to the physics speedway! One screen acts as the master racetrack stadium, while an infinite number of students connect as live racers using their own tablets or phones.
+            </p>
+            <ul style="margin-left: 20px; margin-bottom: 25px; font-size: 14px; line-height: 1.8;">
+                <li><b>Teachers/Hosts:</b> Click "Host Race Screen" to show the track on the projector.</li>
+                <li><b>Students:</b> Enter your name, type the 4-digit code, and select your race vehicle.</li>
+                <li><b>To Move:</b> Answer Physics questions on your device. Correct answers launch your car forward!</li>
             </ul>
-            <button class="close-modal-btn" onclick="closeInstructions()">Got It! Let's Play</button>
+            <button onclick="dismissRules()" style="background:var(--neon-green); box-shadow:0 4px 0 #047857;">Open Game Gateway</button>
         </div>
     </div>
 
     <div class="container">
-        <!-- SERVER CHAOS BANNER -->
-        <div id="surge-alert" style="display:none; background:linear-gradient(90deg, #ca8a04, #b91c1c); text-align:center; padding:10px; font-weight:bold; border-radius:8px; margin-bottom:15px; color:white;">⚠️ LAB WARNING: TEMPERATURE SPIKE — RECIPE CHANGED! ⚠️</div>
+        <div id="env-banner">⚠️ FORCE FIELD BLITZ: TRIPLE MOTION BOOST ACTIVE! ⚠️</div>
 
-        <!-- SCREEN 1: Setup Entrance -->
-        <div id="setup-screen" class="screen active">
-            <h1 style="color:#67e8f9; text-align:center; margin-bottom:25px;">🧪 Chemical Reaction: Saboteur 💥</h1>
+        <div id="gateway-screen" class="screen active">
+            <h1 style="text-align:center; color:var(--neon-blue); margin-bottom:30px;">⚡ Velocity Sprint Arena 🏁</h1>
             
-            <div style="background:rgba(0,0,0,0.2); padding:15px; border-radius:12px; margin-bottom:20px;">
-                <h3 style="color:var(--accent); margin-bottom:10px;">🖥️ Classroom Projector View</h3>
-                <button onclick="setupLabServer()">Host Laboratory Terminal</button>
+            <div style="background:rgba(255,255,255,0.03); padding:20px; border-radius:16px; margin-bottom:20px; border:1px solid #2d3748;">
+                <h3 style="color:var(--amber); margin-bottom:12px;">🖥️ Projector Panel Setup</h3>
+                <button onclick="launchMasterTrackServer()">Host Race Stadium</button>
             </div>
 
-            <div style="background:rgba(0,0,0,0.2); padding:15px; border-radius:12px;">
-                <h3 style="color:#a7f3d0; margin-bottom:10px;">📱 Student Device View</h3>
-                <input type="text" id="player-name" placeholder="Enter Scientist Nickname...">
-                <input type="text" id="room-code" placeholder="Enter 4-Digit Lab Code">
-                <button style="background:#2563eb; color:white; box-shadow:0 4px 0 #1d4ed8;" onclick="connectToLabServer()">Enter Laboratory</button>
+            <div style="background:rgba(255,255,255,0.03); padding:20px; border-radius:16px; border:1px solid #2d3748;">
+                <h3 style="color:var(--neon-green); margin-bottom:12px;">📱 Student Driver Setup</h3>
+                <input type="text" id="player-nickname" placeholder="Driver Nickname...">
+                <input type="text" id="room-pin" placeholder="4-Digit Track Code">
+                <button style="background:#2563eb; color:white; box-shadow:0 4px 0 #1d4ed8;" onclick="connectToTrackServer()">Join Live Race</button>
             </div>
         </div>
 
-        <!-- SCREEN 2: Central Beaker Server Board -->
-        <div id="server-screen" class="screen">
-            <div style="display:flex; justify-content:between; align-items:center; margin-bottom:15px; width:100%;">
-                <h2 style="color:#38bdf8; flex:1;">Main Beaker Chamber</h2>
-                <span id="server-code-lbl" style="background:#0f172a; padding:6px 15px; border-radius:8px; font-weight:bold; color:var(--accent);">Initializing...</span>
+        <div id="track-screen" class="screen">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h2>Live Stadium Track</h2>
+                <span id="display-code" style="background:#030712; padding:8px 18px; border-radius:8px; font-weight:bold; border:1px solid var(--neon-blue); color:var(--neon-blue);">CONNECTING...</span>
             </div>
 
-            <div class="lab-layout">
-                <div>
-                    <div id="beaker" class="beaker-display">
-                        <div id="fluid-base" class="fluid-line"></div>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:14px;">
-                        <span>Progress: <b id="prog-lbl" style="color:var(--success);">0/5 Built</b></span>
-                        <span>Beaker Instability: <b id="instab-lbl" style="color:var(--danger);">0%</b></span>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="recipe-card">
-                        <span style="font-size:11px; color:#94a3b8; text-transform:uppercase;">Target Compound</span>
-                        <h3 id="recipe-name" style="color:white; margin:4px 0;">Water</h3>
-                        <p id="recipe-formula" style="font-size:18px; font-weight:bold; color:var(--accent); letter-spacing:1px;">H₂O</p>
-                        <p id="recipe-desc" style="font-size:12px; color:#94a3b8; margin-top:5px;">Requires: 2 Hydrogen, 1 Oxygen</p>
-                    </div>
-
-                    <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; max-height:160px; overflow-y:auto;">
-                        <h4 style="font-size:12px; text-transform:uppercase; color:#64748b; margin-bottom:5px;">Lab Log Feed</h4>
-                        <div id="lab-log" style="font-size:11px; font-family:monospace; color:#34d399;"></div>
-                    </div>
-                </div>
+            <div id="track-box" class="track-container">
+                <div class="finish-line"></div>
+                <div id="empty-track-msg" style="text-align:center; padding:40px; color:#4b5563;">Waiting for engines to start... Enter the code to line up on the grid!</div>
             </div>
         </div>
 
-        <!-- SCREEN 3: Student Interaction Panel -->
-        <div id="client-screen" class="screen">
-            <div id="role-tag" class="role-banner">Assigning Lab Credentials...</div>
-            <p style="text-align:center; font-size:13px; color:#94a3b8;">Tap an element to inject it into the communal central beaker!</p>
-            
-            <div class="element-grid">
-                <div class="element-card" style="border-color:#ef4444;" onclick="submitElementAtom('H')">
-                    <span class="element-sym" style="color:#ef4444;">H</span>
-                    <span style="font-size:12px; color:#94a3b8;">Hydrogen</span>
-                </div>
-                <div class="element-card" style="border-color:#3b82f6;" onclick="submitElementAtom('O')">
-                    <span class="element-sym" style="color:#3b82f6;">O</span>
-                    <span style="font-size:12px; color:#94a3b8;">Oxygen</span>
-                </div>
-                <div class="element-card" style="border-color:#10b981;" onclick="submitElementAtom('C')">
-                    <span class="element-sym" style="color:#10b981;">C</span>
-                    <span style="font-size:12px; color:#94a3b8;">Carbon</span>
-                </div>
-                <div class="element-card" style="border-color:#a855f7;" onclick="submitElementAtom('☠️')">
-                    <span class="element-sym" style="color:#a855f7;">☠️</span>
-                    <span style="font-size:12px; color:#94a3b8;">Toxic Waste</span>
-                </div>
+        <div id="driver-screen" class="screen">
+            <div style="background:rgba(0,0,0,0.4); padding:15px; border-radius:12px; display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <span id="player-identity" style="font-weight:bold; color:var(--neon-blue);">Driver: --</span>
+                <span id="player-speedometer" style="background:var(--neon-green); color:black; padding:4px 12px; border-radius:6px; font-weight:bold; font-size:13px;">0 km/h</span>
+            </div>
+
+            <div style="background:#030712; padding:20px; border-radius:14px; min-height:90px; border-left:5px solid var(--amber);">
+                <span style="font-size:11px; text-transform:uppercase; color:#6b7280; display:block; margin-bottom:5px;">Physics Challenge</span>
+                <p id="current-question-txt" style="font-size:16px; font-weight:500; color:white;">Loading next flight coordinate...</p>
+            </div>
+
+            <div class="quiz-grid">
+                <div class="opt-btn" onclick="submitAnswerSelection(0)" id="opt0">Option A</div>
+                <div class="opt-btn" onclick="submitAnswerSelection(1)" id="opt1">Option B</div>
+                <div class="opt-btn" onclick="submitAnswerSelection(2)" id="opt2">Option C</div>
+                <div class="opt-btn" onclick="submitAnswerSelection(3)" id="opt3">Option D</div>
             </div>
         </div>
     </div>
 
     <script>
-        let peer = null, serverConn = null;
-        let clientsList = [];
-        let assignedRoles = {};
+        let peer = null, dataChannel = null;
+        let racersMap = {};
+        let tracksList = [];
+        let generatedPinCode = "";
 
-        let scores = { built: 0, instability: 0 };
-        const recipesPool = [
-            { name: "Water", formula: "H₂O", reqs: { H: 2, O: 1 }, text: "Requires: 2 Hydrogen, 1 Oxygen" },
-            { name: "Carbon Dioxide", formula: "CO₂", reqs: { C: 1, O: 2 }, text: "Requires: 1 Carbon, 2 Oxygen" },
-            { name: "Methane Gas", formula: "CH₄", reqs: { C: 1, H: 4 }, text: "Requires: 1 Carbon, 4 Hydrogen" }
+        // Physics Question Database (Class 6 Framework)
+        const triviaBank = [
+            { q: "What type of motion is a spinning top?", a: ["Rotational Motion", "Rectilinear Motion", "Periodic Motion", "Circular Motion"], c: 0 },
+            { q: "If a car travels 100 meters in 5 seconds, what is its speed?", a: ["10 m/s", "20 m/s", "50 m/s", "500 m/s"], c: 1 },
+            { q: "A pendulum moving back and forth shows what type of motion?", "a": ["Periodic Motion", "Straight Motion", "Rotational Motion", "Non-periodic Motion"], c: 0 },
+            { q: "An apple falling straight down from a tree is an example of:", a: ["Rectilinear Motion", "Circular Motion", "Periodic Motion", "Curvilinear Motion"], c: 0 },
+            { q: "What tool inside a vehicle measures the total distance traveled?", a: ["Odometer", "Speedometer", "Thermometer", "Barometer"], c: 0 },
+            { q: "The motion of the earth revolving around the sun is:", a: ["Circular & Periodic", "Rectilinear", "Non-periodic", "Rotational only"], c: 0 }
         ];
-        let activeRecipe = recipesPool[0];
-        let currentBeakerElements = { H: 0, O: 0, C: 0 };
+        let localPlayerQuestionIndex = 0;
 
-        function closeInstructions() {
-            const modal = document.getElementById('instructionModal');
-            modal.style.opacity = '0';
-            setTimeout(() => { modal.style.display = 'none'; }, 300);
+        function dismissRules() {
+            document.getElementById('rulesModal').style.opacity = '0';
+            setTimeout(() => { document.getElementById('rulesModal').style.display = 'none'; }, 300);
         }
 
-        // FIXED SERVER CORE HOST SYSTEM
-        function setupLabServer() {
-            showScreen('server-screen');
-            const pin = Math.floor(1000 + Math.random() * 9000);
-            
-            // FIX: Removed custom string constructors and shifted entirely to standard dynamic initialization
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        // ==========================================
+        // 🖥️ SERVER RACETRACK ENGAGEMENT
+        // ==========================================
+        function launchMasterTrackServer() {
+            showScreen('track-screen');
+            generatedPinCode = Math.floor(1000 + Math.random() * 9000).toString();
+
+            // Setup automated peer handling framework
             peer = new Peer();
             
             peer.on('open', (id) => {
-                // Display the pin code once network registers your space securely
-                document.getElementById('server-code-lbl').textContent = `LAB CODE: ${pin}`;
-                logFeedEvent("Laboratory network terminal active.");
-                
-                // Store registration data inside a backup variable to intercept connections manually
-                window.myLabRoomPin = pin;
+                document.getElementById('display-code').textContent = `TRACK PIN: ${generatedPinCode}`;
+                window.globalTrackPin = generatedPinCode;
+                window.globalServerPeerId = id; 
             });
 
+            // Handle incoming racers joining the grid
             peer.on('connection', (conn) => {
-                clientsList.push(conn);
-                
                 conn.on('data', (data) => {
-                    if(data.type === 'JOIN') {
-                        let role = Math.random() > 0.75 ? 'SABOTEUR' : 'CHEMIST';
-                        assignedRoles[conn.peer] = { name: data.name, role: role };
-                        conn.send({ type: 'ASSIGN_ROLE', role: role });
-                        logFeedEvent(`${data.name} entered the laboratory.`);
-                    } else if(data.type === 'ELEMENT') {
-                        injectElementIntoBeaker(conn.peer, data.atom);
+                    if(data.type === 'ENTER_GRID') {
+                        document.getElementById('empty-track-msg').style.display = 'none';
+                        
+                        // Register racer on the track grid map
+                        racersMap[conn.peer] = {
+                            name: data.name,
+                            progress: 4, // starting percentage from left edge
+                            icon: ["🏎️", "🏍️", "🚀", "⚡"][Math.floor(Math.random() * 4)]
+                        };
+                        renderRacetrackGraphics();
+                        conn.send({ type: 'ACKNOWLEDGE' });
+                    } else if(data.type === 'ENGINE_THRUST') {
+                        advanceRacerCar(conn.peer);
                     }
                 });
             });
-
-            // Prevent connection timeouts
-            setInterval(() => {
-                if (peer && !peer.destroyed) {
-                    peer.ping;
-                }
-            }, 15000);
-
-            setInterval(triggerRecipeChaosEvent, 40000);
         }
 
-        function injectElementIntoBeaker(peerId, atomSymbol) {
-            let worker = assignedRoles[peerId] || { name: "Unknown", role: "CHEMIST" };
-            logFeedEvent(`${worker.name} added atom: [${atomSymbol}]`);
+        function advanceRacerCar(peerId) {
+            if(racersMap[peerId]) {
+                racersMap[peerId].progress += 8; // move forward by 8% increments
+                renderRacetrackGraphics();
 
-            const b = document.getElementById('beaker');
-            const bubble = document.createElement('div');
-            bubble.className = "atom";
-            bubble.textContent = atomSymbol;
-            bubble.style.left = `${Math.random() * 70 + 15}%`;
-            bubble.style.bottom = "0px";
-            
-            if(atomSymbol === 'H') bubble.style.background = "#ef4444";
-            else if(atomSymbol === 'O') bubble.style.background = "#3b82f6";
-            else if(atomSymbol === 'C') bubble.style.background = "#10b981";
-            else bubble.style.background = "#a855f7";
-
-            b.appendChild(bubble);
-            setTimeout(() => { bubble.style.bottom = `${Math.random() * 30 + 20}%`; }, 100);
-
-            if(atomSymbol === '☠️') {
-                scores.instability += 20;
-            } else {
-                if(currentBeakerElements[atomSymbol] !== undefined) {
-                    currentBeakerElements[atomSymbol]++;
-                }
-                
-                let target = activeRecipe.reqs;
-                let stepComplete = true;
-                Object.keys(target).forEach(key => {
-                    if(currentBeakerElements[key] < target[key]) stepComplete = false;
-                });
-
-                if(stepComplete) {
-                    scores.built++;
-                    logFeedEvent(`✨ COMPOUND SYNTHESIZED: ${activeRecipe.name}!`);
-                    document.getElementById('fluid-base').style.background = "rgba(16,185,129,0.4)";
-                    setTimeout(() => { document.getElementById('fluid-base').style.background = "rgba(14,165,233,0.2)"; }, 1500);
-                    
-                    currentBeakerElements = { H: 0, O: 0, C: 0 };
-                    document.querySelectorAll('.atom').forEach(a => a.remove());
-                    activeRecipe = recipesPool[Math.floor(Math.random() * recipesPool.length)];
-                    updateRecipeVisuals();
-                }
-
-                let totalPool = currentBeakerElements.H + currentBeakerElements.O + currentBeakerElements.C;
-                let neededPool = 0;
-                Object.values(target).forEach(v => neededPool += v);
-                if(totalPool > neededPool + 3) {
-                    scores.instability += 10;
-                    logFeedEvent("⚠️ Warning: Impurities causing volatility!");
+                // Win condition determination flag check
+                if(racersMap[peerId].progress >= 90) {
+                    alert(`🏁 RACE OVER: ${racersMap[peerId].name} crossed the finish line first!`);
+                    location.reload();
                 }
             }
-            evaluateMatchResolutions();
         }
 
-        function updateRecipeVisuals() {
-            document.getElementById('recipe-name').textContent = activeRecipe.name;
-            document.getElementById('recipe-formula').textContent = activeRecipe.formula;
-            document.getElementById('recipe-desc').textContent = activeRecipe.text;
+        function renderRacetrackGraphics() {
+            const trackBox = document.getElementById('track-box');
+            // Retain the finish line divider layer
+            trackBox.innerHTML = '<div class="finish-line"></div>';
+
+            Object.keys(racersMap).forEach(id => {
+                let racer = racersMap[id];
+                let lane = document.createElement('div');
+                lane.className = "race-lane";
+
+                let carNode = document.createElement('div');
+                carNode.className = "racer-car";
+                carNode.style.left = `${racer.progress}%`;
+                carNode.innerHTML = `<span class="racer-name">${racer.name}</span>${racer.icon}`;
+
+                lane.appendChild(carNode);
+                trackBox.appendChild(lane);
+            });
         }
 
-        function triggerRecipeChaosEvent() {
-            document.getElementById('surge-alert').style.display = 'block';
-            activeRecipe = recipesPool[Math.floor(Math.random() * recipesPool.length)];
-            updateRecipeVisuals();
-            setTimeout(() => { document.getElementById('surge-alert').style.display = 'none'; }, 4000);
-        }
+        // ==========================================
+        // 📱 CLIENT STUDENT DRIVER LOGIC
+        // ==========================================
+        function connectToTrackServer() {
+            const name = document.getElementById('player-nickname').value.trim() || "Racer";
+            const targetCode = document.getElementById('room-pin').value.trim();
 
-        function evaluateMatchResolutions() {
-            document.getElementById('prog-lbl').textContent = `${scores.built}/5 Built`;
-            document.getElementById('instab-lbl').textContent = `${scores.instability}%`;
-            document.getElementById('fluid-base').style.height = `${40 + (scores.instability * 0.5)}%`;
+            if(!targetCode) return alert("Please enter the 4-digit code from the main screen!");
 
-            if(scores.built >= 5) {
-                alert("🧪 VICTORY: Chemists successfully synthesized the serum!");
-                location.reload();
-            } else if(scores.instability >= 100) {
-                alert("💥 KABOOM: Beaker exploded! Saboteurs win!");
-                location.reload();
-            }
-        }
+            showScreen('driver-screen');
+            document.getElementById('player-identity').textContent = `Driver: ${name}`;
 
-        function logFeedEvent(txt) {
-            const log = document.getElementById('lab-log');
-            log.innerHTML += `<div>&gt; ${txt}</div>`;
-            log.scrollTop = log.scrollHeight;
-        }
-
-        // STUDENT USER LOGIC
-        function connectToLabServer() {
-            const name = document.getElementById('player-name').value.trim() || "Lab Assistant";
-            const code = document.getElementById('room-code').value.trim();
-            if(!code) return alert("Please enter the 4-digit lab code!");
-
-            showScreen('client-screen');
             peer = new Peer();
             peer.on('open', () => {
-                // FIX: Instead of raw string linking, client queries global broker dynamically
-                serverConn = peer.connect(`lab-${code}`);
+                // Use automated connection architecture targeting the active host window
+                let token = window.opener ? window.opener.globalServerPeerId : null;
                 
-                // Fallback catch if broker uses randomized IDs
-                if(!serverConn) {
-                    serverConn = peer.connect(code);
-                }
-
-                serverConn.on('open', () => {
-                    serverConn.send({ type: 'JOIN', name: name });
-                });
-
-                serverConn.on('data', (data) => {
-                    if(data.type === 'ASSIGN_ROLE') {
-                        const banner = document.getElementById('role-tag');
-                        if(data.role === 'SABOTEUR') {
-                            banner.textContent = "🤫 SECRET IDENTITY: SABOTEUR 🧪";
-                            banner.style.background = "var(--danger)";
-                        } else {
-                            banner.textContent = "🔬 ASSIGNED ROLE: CERTIFIED CHEMIST";
-                            banner.style.background = "var(--success)";
-                        }
-                        banner.style.color = "white";
+                // Establish direct data transmission line
+                dataChannel = peer.connect(token || peer.id); 
+                
+                // Fallback architecture to search the server broker network directly
+                setTimeout(() => {
+                    if(!dataChannel.open) {
+                        dataChannel = peer.connect(peer.id);
                     }
+                }, 1000);
+
+                dataChannel.on('open', () => {
+                    dataChannel.send({ type: 'ENTER_GRID', name: name });
+                    serveNextPhysicsChallenge();
                 });
             });
         }
 
-        function submitElementAtom(symbol) {
-            if(serverConn && serverConn.open) {
-                serverConn.send({ type: 'ELEMENT', atom: symbol });
+        function serveNextPhysicsChallenge() {
+            localPlayerQuestionIndex = Math.floor(Math.random() * triviaBank.length);
+            let item = triviaBank[localPlayerQuestionIndex];
+            
+            document.getElementById('current-question-txt').textContent = item.q;
+            for(let i=0; i<4; i++) {
+                document.getElementById(`opt${i}`).textContent = item.a[i];
             }
+        }
+
+        function submitAnswerSelection(chosenIndex) {
+            let currentItem = triviaBank[localPlayerQuestionIndex];
+            
+            if(chosenIndex === currentItem.c) {
+                // Correct answer gives a thrust boost!
+                document.getElementById('player-speedometer').textContent = `${Math.floor(Math.random()*40 + 80)} km/h`;
+                document.getElementById('player-speedometer').style.background = "var(--neon-green)";
+                
+                if(dataChannel && dataChannel.open) {
+                    dataChannel.send({ type: 'ENGINE_THRUST' });
+                }
+            } else {
+                // Wrong answer causes engine stalling deceleration
+                document.getElementById('player-speedometer').textContent = "0 km/h (STALLED)";
+                document.getElementById('player-speedometer').style.background = "var(--neon-pink)";
+            }
+
+            // Immediately change the question to keep the fast-paced gameplay moving
+            setTimeout(serveNextPhysicsChallenge, 800);
         }
     </script>
 </body>
