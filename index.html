@@ -3,30 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eco-Grid: Resource Racer</title>
-    <!-- Stable global PeerJS CDN for instant direct multiplayer -->
+    <title>Newton's Launch: Force Field Duel</title>
+    <!-- Stable global PeerJS CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
     <style>
         :root {
-            --bg: #0f172a;
-            --card-bg: #1e293b;
-            --primary: #10b981;
-            --secondary: #3b82f6;
-            --text: #f8fafc;
-            --accent: #f59e0b;
-            --danger: #ef4444;
+            --bg: #0b0f19;
+            --card-bg: #161e2e;
+            --primary: #38bdf8;
+            --success: #4ade80;
+            --accent: #fbbf24;
+            --danger: #f87171;
+            --text: #f3f4f6;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Segoe UI', system-ui, sans-serif;
             user-select: none;
         }
 
         body {
-            background: linear-gradient(135deg, var(--bg), #1e1b4b);
+            background: radial-gradient(circle at center, #1e1b4b, var(--bg));
             color: var(--text);
             min-height: 100vh;
             display: flex;
@@ -37,12 +37,12 @@
 
         .container {
             width: 100%;
-            max-width: 650px;
+            max-width: 600px;
             background: var(--card-bg);
             border-radius: 24px;
             padding: 25px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-            border: 2px solid rgba(255,255,255,0.05);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7);
+            border: 1px solid rgba(255,255,255,0.05);
             position: relative;
         }
 
@@ -53,227 +53,206 @@
             text-align: center;
             margin-bottom: 20px;
             color: #fef08a;
-            text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            text-shadow: 0 0 15px rgba(254,240,138,0.3);
         }
 
         .input-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; color: var(--secondary); font-weight: bold; }
-        input {
+        label { display: block; margin-bottom: 8px; color: var(--primary); font-weight: bold; }
+        input[type="text"] {
             width: 100%; padding: 14px; border-radius: 12px;
-            border: 3px solid var(--secondary); background: rgba(0,0,0,0.2);
+            border: 3px solid var(--primary); background: rgba(0,0,0,0.3);
             color: #fff; font-size: 18px; text-align: center; outline: none;
         }
 
-        button {
+        button.menu-btn {
             width: 100%; padding: 15px; background: var(--accent);
-            color: #0f172a; border: none; border-radius: 14px;
+            color: #0b0f19; border: none; border-radius: 14px;
             font-size: 18px; font-weight: bold; cursor: pointer;
             transition: 0.2s; margin-top: 10px; box-shadow: 0 4px 0 #b45309;
         }
-        button:hover { transform: translateY(-2px); filter: brightness(1.1); }
-        button:active { transform: translateY(2px); box-shadow: none; }
+        button.menu-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+        button.menu-btn:active { transform: translateY(2px); box-shadow: none; }
 
-        .divider { text-align: center; margin: 15px 0; font-weight: bold; color: #94a3b8; }
+        .divider { text-align: center; margin: 15px 0; font-weight: bold; color: #6b7280; }
 
         /* Scoreboard Header */
         .scoreboard {
             display: flex; justify-content: space-between;
-            background: rgba(0,0,0,0.3); padding: 15px;
-            border-radius: 16px; margin-bottom: 20px;
+            background: rgba(0,0,0,0.4); padding: 12px;
+            border-radius: 16px; margin-bottom: 15px;
             border: 1px solid rgba(255,255,255,0.05);
         }
         .score-box { text-align: center; flex: 1; }
         .score-box:first-child { border-right: 1px solid rgba(255,255,255,0.1); }
-        .score-val { font-size: 28px; font-weight: bold; color: var(--primary); }
+        .score-val { font-size: 24px; font-weight: bold; color: var(--success); }
 
-        /* Level Alert Banner */
+        /* Wind/Force Warning Alert Banner */
         .alert-banner {
-            display: none; background: linear-gradient(90deg, #dc2626, #ea580c);
-            color: white; text-align: center; padding: 12px;
-            font-weight: bold; font-size: 18px; border-radius: 12px;
-            margin-bottom: 15px; animation: wobble 0.5s infinite alternate;
+            display: none; background: linear-gradient(90deg, #b91c1c, #c2410c);
+            color: white; text-align: center; padding: 10px;
+            font-weight: bold; font-size: 16px; border-radius: 12px;
+            margin-bottom: 15px; animation: flash 0.4s infinite alternate;
         }
-        @keyframes wobble {
-            from { transform: rotate(-1deg); } to { transform: rotate(1deg); }
-        }
+        @keyframes flash { from { opacity: 0.7; } to { opacity: 1; } }
 
-        /* Target Objective Panel */
-        .objective-panel {
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid var(--primary);
-            border-radius: 16px; padding: 15px;
-            text-align: center; margin-bottom: 20px;
+        /* Physics Game Canvas Container */
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            background: #030712;
+            border: 2px solid #1f2937;
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 15px;
         }
-        .objective-title { font-size: 15px; text-transform: uppercase; color: #94a3b8; letter-spacing: 1px; }
-        .objective-desc { font-size: 22px; font-weight: bold; color: #fff; margin-top: 5px; }
+        canvas { display: block; background: #020617; }
 
-        /* Core Interactive Item Grid */
-        .item-grid {
-            display: grid; gap: 12px; margin-bottom: 20px;
-            perspective: 1000px;
+        /* Launch Controls Layout */
+        .controls-panel {
+            background: rgba(255,255,255,0.02);
+            padding: 15px; border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.05);
         }
-        .grid-3x3 { grid-template-columns: repeat(3, 1fr); }
-        .grid-4x4 { grid-template-columns: repeat(4, 1fr); }
+        .slider-row { display: flex; align-items: center; margin-bottom: 12px; gap: 10px; }
+        .slider-row label { width: 80px; margin-bottom: 0; font-size: 14px; }
+        input[type="range"] { flex: 1; accent-color: var(--primary); }
 
-        .grid-item {
-            background: #334155; border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 16px; aspect-ratio: 1;
-            display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
-            cursor: pointer; transition: all 0.2s ease;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        .action-btn {
+            width: 100%; padding: 18px; background: linear-gradient(#10b981, #059669);
+            color: white; font-weight: bold; font-size: 20px; border: none;
+            border-radius: 12px; cursor: pointer; box-shadow: 0 5px 0 #047857;
+            text-transform: uppercase; letter-spacing: 1px;
         }
-        .grid-item:hover { background: #475569; transform: scale(1.03); }
-        .grid-item:active { transform: scale(0.95); }
-        .grid-item.selected {
-            background: rgba(16, 185, 129, 0.2);
-            border: 3px solid var(--primary);
-        }
-        .item-emoji { font-size: 32px; margin-bottom: 4px; }
-        .item-name { font-size: 12px; text-align: center; color: #cbd5e1; font-weight: 500; }
+        .action-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #047857; }
+        .action-btn:disabled { background: #4b5563; box-shadow: none; cursor: not-allowed; opacity: 0.5; }
 
-        .status-tag {
-            display: inline-block; padding: 4px 10px;
-            border-radius: 20px; font-size: 12px; margin-top: 5px;
-            background: rgba(255,255,255,0.05);
+        /* Power Charging Meter */
+        .power-meter-container {
+            width: 100%; height: 10px; background: #1f2937;
+            border-radius: 5px; margin-top: 10px; overflow: hidden;
         }
+        .power-bar { width: 0%; height: 100%; background: var(--accent); transition: width 0.05s linear; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- SPEED ALERT BANNER -->
-        <div id="difficulty-alert" class="alert-banner">⚠️ LEVEL UP: GRID SIZE EXPANDING! ⚠️</div>
+        <!-- WEATHER ALERT BANNER -->
+        <div id="difficulty-alert" class="alert-banner">⚠️ DANGER: SOLAR WIND DRIFT INTENSIFYING! ⚠️</div>
 
-        <!-- SCREEN 1: Connection Setup -->
+        <!-- SCREEN 1: Entry Connection Menu -->
         <div id="setup-screen" class="screen active">
-            <h1>🌿 Eco-Grid: Resource Racer ⚡</h1>
+            <h1>🚀 Newton's Launch pad 🪐</h1>
             <div class="input-group">
-                <label for="username">Pilot Nickname:</label>
-                <input type="text" id="username" placeholder="Enter your name...">
+                <label for="username">Commander Callsign:</label>
+                <input type="text" id="username" placeholder="Enter pilot nickname...">
             </div>
             <hr style="opacity: 0.1; margin: 20px 0;">
-            <button onclick="createRoom()">Host New Match</button>
+            <button class="menu-btn" onclick="createRoom()">Establish New Space Room</button>
             <div class="divider">OR</div>
             <div class="input-group">
-                <label for="room-code-input">Enter Room Code:</label>
-                <input type="text" id="room-code-input" placeholder="e.g., race-1234">
+                <label for="room-code-input">Enter Navigation Room Code:</label>
+                <input type="text" id="room-code-input" placeholder="e.g., launch-1234">
             </div>
-            <button style="background:#3b82f6; color:white; box-shadow:0 4px 0 #1d4ed8;" onclick="joinRoom()">Join Match</button>
+            <button class="menu-btn" style="background:#3b82f6; color:white; box-shadow:0 4px 0 #1d4ed8;" onclick="joinRoom()">Join Navigation Room</button>
         </div>
 
-        <!-- SCREEN 2: Lobby Waiting Area -->
+        <!-- SCREEN 2: Lobby Room -->
         <div id="waiting-screen" class="screen">
-            <h2>Lobby Operational</h2>
-            <div id="code-box-display" class="room-display" style="background:rgba(0,0,0,0.2); padding:20px; border-radius:12px; text-align:center; border:2px dashed var(--accent); margin-bottom:20px; display:none;">
-                Share this Room Code with your friend:<br>
+            <h2>Orbit Synchronization</h2>
+            <div id="code-box-display" style="background:rgba(0,0,0,0.3); padding:20px; border-radius:12px; text-align:center; border:2px dashed var(--accent); margin-bottom:20px; display:none;">
+                Broadcast this frequency room code to your opponent:<br>
                 <span id="display-code-id" style="font-size:32px; font-weight:bold; color:var(--primary); letter-spacing:2px;">---</span>
             </div>
-            <div id="lobby-status-text" style="text-align:center; font-style:italic; color:#a7f3d0;">Synchronizing quantum networks...</div>
+            <div style="text-align:center; font-style:italic; color:#93c5fd;">Aligning orbital parameters...</div>
         </div>
 
-        <!-- SCREEN 3: Active Grid Match -->
+        <!-- SCREEN 3: Core Gameplay Simulation Area -->
         <div id="game-screen" class="screen">
             <div class="scoreboard">
                 <div class="score-box">
                     <div id="p1-label" style="font-weight:bold;">You</div>
                     <div class="score-val" id="p1-score">0/10</div>
-                    <div id="p1-status" class="status-tag" style="color:var(--primary);">Racing</div>
                 </div>
                 <div class="score-box">
                     <div id="p2-label" style="font-weight:bold;">Opponent</div>
                     <div class="score-val" id="p2-score">0/10</div>
-                    <div id="p2-status" class="status-tag" style="color:var(--secondary);">Racing</div>
                 </div>
             </div>
 
-            <!-- Goal Indicator -->
-            <div class="objective-panel">
-                <div class="objective-title" id="objective-counter">Mission Objective (Collect 0/0)</div>
-                <div class="objective-desc" id="objective-instruction">Loading Next Command...</div>
+            <!-- Physics Interactive Window -->
+            <div class="canvas-container">
+                <canvas id="physicsCanvas" width="550" height="360"></canvas>
             </div>
 
-            <!-- Scramble Interactive Canvas -->
-            <div id="item-grid-canvas" class="item-grid grid-3x3"></div>
-            <button style="background: #ef4444; color:white; box-shadow: 0 4px 0 #b91c1c;" onclick="clearSelectedTaps()">Reset Selections</button>
+            <!-- Flight Dashboard Panels -->
+            <div class="controls-panel">
+                <div class="slider-row">
+                    <label id="angle-display">Angle: 0°</label>
+                    <input type="range" id="angleRange" min="-60" max="60" value="0" oninput="updateControlsLabel()">
+                </div>
+                <button id="launchBtn" class="action-btn" onmousedown="startChargingEngine()" onmouseup="triggerRocketLaunch()" ontouchstart="startChargingEngine()" ontouchend="triggerRocketLaunch()">Hold to Charge Engine</button>
+                <div class="power-meter-container">
+                    <div id="powerBar" class="power-bar"></div>
+                </div>
+            </div>
         </div>
 
-        <!-- SCREEN 4: Real-time Race Finish Center -->
+        <!-- SCREEN 4: Match Summary Arena -->
         <div id="results-screen" class="screen">
-            <h1>🏁 Race Report 🏁</h1>
+            <h1>🏆 Simulation Concluded 🏆</h1>
             <div class="scoreboard" style="background:rgba(255,255,255,0.03); margin:25px 0; padding:20px;">
                 <div class="score-box">
                     <div id="r-p1-name" style="font-weight:bold; font-size:18px;">You</div>
                     <div class="score-val" id="r-p1-score" style="font-size:46px;">0</div>
-                    <div style="color:var(--primary); font-weight:bold; margin-top:5px;">Finished</div>
                 </div>
                 <div class="score-box">
                     <div id="r-p2-name" style="font-weight:bold; font-size:18px;">Opponent</div>
                     <div class="score-val" id="r-p2-score" style="font-size:46px;">0</div>
-                    <div id="r-p2-tag" style="color:var(--accent); font-weight:bold; margin-top:5px;">Harvesting...</div>
                 </div>
             </div>
             <h2 id="end-winner-banner" style="color:#fef08a; text-align:center; min-height:45px; white-space:pre-wrap;"></h2>
-            <button onclick="location.reload()" style="background:var(--primary); box-shadow:0 4px 0 #047857; margin-top:15px;">Main Menu</button>
+            <button class="menu-btn" onclick="location.reload()" style="background:var(--success); box-shadow:0 4px 0 #15803d; margin-top:15px;">Return to Main Station</button>
         </div>
     </div>
 
     <script>
         let peer = null, connection = null;
         let myName = "", oppName = "Opponent";
-        let roundsCleared = 0;
-        const totalRoundsToWin = 10;
-        
-        let oppClearedCount = 0;
+        let rocketsDocked = 0;
+        const totalToWin = 10;
+        let oppDockedCount = 0;
         let myFinished = false, oppFinished = false;
 
-        // Dataset of everything built cleanly around Class 6 Science curriculum
-        const itemDatabase = [
-            { name: "Plastic Bottle", emoji: "🧴", tags: ["non-biodegradable", "recyclable", "opaque"] },
-            { name: "Apple Peel", emoji: "🍏", tags: ["biodegradable", "organic"] },
-            { name: "Iron Nail", emoji: "📌", tags: ["magnetic", "conductor", "opaque"] },
-            { name: "Glass Window", emoji: "🪟", tags: ["transparent", "insulator"] },
-            { name: "Solar Panel", emoji: "☀️", tags: ["renewable"] },
-            { name: "Coal Chunk", emoji: "🪨", tags: ["non-renewable", "opaque"] },
-            { name: "Paper Bag", emoji: "🛍️", tags: ["biodegradable", "recyclable"] },
-            { name: "Copper Wire", emoji: "🔌", tags: ["conductor", "opaque"] },
-            { name: "Dry Autumn Leaf", emoji: "🍂", tags: ["biodegradable", "organic"] },
-            { name: "Aluminum Can", emoji: "🥫", tags: ["recyclable", "conductor", "opaque"] },
-            { name: "Steel Spoon", emoji: "🥄", tags: ["magnetic", "conductor", "opaque"] },
-            { name: "Rubber Band", emoji: "🪵", tags: ["insulator", "elastic"] },
-            { name: "Oiled Paper", emoji: "📜", tags: ["translucent"] },
-            { name: "Wind Turbine", emoji: "💨", tags: ["renewable"] },
-            { name: "Crude Oil", emoji: "🛢️", tags: ["non-renewable"] },
-            { name: "Cardboard", emoji: "📦", tags: ["biodegradable", "recyclable", "opaque"] }
-        ];
-
-        const matchCategories = [
-            { label: "Biodegradable Items", tag: "biodegradable" },
-            { label: "Electrical Conductors", tag: "conductor" },
-            { label: "Magnetic Objects", tag: "magnetic" },
-            { label: "Non-Renewable Fuel sources", tag: "non-renewable" },
-            { label: "Opaque Materials", tag: "opaque" },
-            { label: "Renewable Energy Items", tag: "renewable" },
-            { label: "Recyclable Products", tag: "recyclable" },
-            { label: "Electrical Insulators", tag: "insulator" }
-        ];
-
-        let currentTargetTag = "";
-        let requiredTargetCount = 0;
-        let selectedIndices = [];
-        let itemsOnGrid = [];
+        // Physics Engine Global Variables
+        let canvas, ctx;
+        let animationFrameId;
+        
+        let rocket = { x: 275, y: 330, vx: 0, vy: 0, active: false, radius: 6 };
+        let spaceStation = { x: 275, y: 30, radius: 18, direction: 1, speed: 2 };
+        let gravityWell = { x: 275, y: 180, mass: 150, radius: 22 }; // Gravitational obstacle
+        
+        let engineCharge = 0;
+        let chargingInterval;
+        let isCharging = false;
+        let solarWindX = 0; // Adaptive variable force factor
 
         function showScreen(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
         }
 
-        // Network Rooms setup
+        function updateControlsLabel() {
+            const val = document.getElementById('angleRange').value;
+            document.getElementById('angle-display').textContent = `Angle: ${val}°`;
+        }
+
+        // Room Networking Initializations
         function createRoom() {
-            myName = document.getElementById('username').value.trim() || "Host Alpha";
+            myName = document.getElementById('username').value.trim() || "Commander Host";
             showScreen('waiting-screen');
             const code = Math.floor(1000 + Math.random() * 9000);
-            const fullId = `race-${code}`;
+            const fullId = `launch-${code}`;
 
             peer = new Peer(fullId);
             peer.on('open', (id) => {
@@ -287,9 +266,9 @@
         }
 
         function joinRoom() {
-            myName = document.getElementById('username').value.trim() || "Racer Beta";
+            myName = document.getElementById('username').value.trim() || "Pilot Guest";
             const code = document.getElementById('room-code-input').value.trim();
-            if(!code) return alert("Type the code first!");
+            if(!code) return alert("Please specify room code!");
 
             showScreen('waiting-screen');
             peer = new Peer();
@@ -301,202 +280,251 @@
 
         function bindNetworkEvents() {
             connection.on('open', () => {
-                connection.send({ type: 'WELCOME', name: myName });
+                connection.send({ type: 'HANDSHAKE', name: myName });
             });
             connection.on('data', (data) => {
-                if(data.type === 'WELCOME') {
+                if(data.type === 'HANDSHAKE') {
                     oppName = data.name;
-                    launchMatchUi();
-                } else if(data.type === 'PROGRESS') {
-                    oppClearedCount = data.count;
-                    document.getElementById('p2-score').textContent = `${oppClearedCount}/${totalRoundsToWin}`;
-                    document.getElementById('r-p2-score').textContent = oppClearedCount;
-                    if(data.finished) {
-                        oppFinished = true;
-                        document.getElementById('p2-status').textContent = "Finished";
-                        document.getElementById('r-p2-tag').textContent = "Finished";
-                    }
-                    liveCalculateScoreEnd();
-                } else if(data.type === 'HARDNESS_ALERT') {
-                    triggerAlertBanner();
+                    launchGameSimulation();
+                } else if(data.type === 'UPDATE') {
+                    oppDockedCount = data.count;
+                    document.getElementById('p2-score').textContent = `${oppDockedCount}/${totalToWin}`;
+                    document.getElementById('r-p2-score').textContent = oppDockedCount;
+                    if(data.finished) oppFinished = true;
+                    evaluateMatchEndCondition();
+                } else if(data.type === 'WIND_ALERT') {
+                    triggerSolarAlert();
                 }
             });
         }
 
-        function launchMatchUi() {
+        function launchGameSimulation() {
             document.getElementById('p1-label').textContent = myName;
             document.getElementById('r-p1-name').textContent = myName;
             document.getElementById('p2-label').textContent = oppName;
             document.getElementById('r-p2-name').textContent = oppName;
             showScreen('game-screen');
-            loadNewMissionRound();
+            
+            canvas = document.getElementById('physicsCanvas');
+            ctx = canvas.getContext('2d');
+            
+            resetRocketState();
+            startPhysicsLoop();
         }
 
-        // Core Mission Setup Logic
-        function loadNewMissionRound() {
-            selectedIndices = [];
+        // Engine charging mechanisms
+        function startChargingEngine() {
+            if(rocket.active || isCharging) return;
+            isCharging = true;
+            engineCharge = 0;
+            document.getElementById('powerBar').style.width = '0%';
             
-            // Check difficulty step: rounds 1-4 are 3x3 grid, rounds 5+ expand to 4x4 grid
-            let isHardTier = (roundsCleared >= 4);
-            let gridSize = isHardTier ? 16 : 9;
-
-            if(roundsCleared > 0 && roundsCleared % 2 === 0 && selectedIndices.length === 0) {
-                // If we just advanced up past an even round boundary, show warning
-                triggerAlertBanner();
-                connection.send({ type: 'HARDNESS_ALERT' });
-            }
-
-            const canvas = document.getElementById('item-grid-canvas');
-            if(isHardTier) {
-                canvas.className = "item-grid grid-4x4";
-            } else {
-                canvas.className = "item-grid grid-3x3";
-            }
-
-            // Shuffle and slice items for the grid assignment
-            let shuffledPool = [...itemDatabase].sort(() => Math.random() - 0.5);
-            itemsOnGrid = shuffledPool.slice(0, gridSize);
-
-            // Select a valid scoring category that definitely exists inside our current active grid subset
-            let validCategories = matchCategories.filter(cat => {
-                return itemsOnGrid.filter(item => item.tags.includes(cat.tag)).length >= 2;
-            });
-            
-            // Fallback safety if random slice is too barren
-            let activeCategory = validCategories.length > 0 ? validCategories[Math.floor(Math.random() * validCategories.length)] : matchCategories[0];
-            
-            currentTargetTag = activeCategory.tag;
-            
-            // Calculate total correct choices present on grid
-            let totalCorrectOnGrid = itemsOnGrid.filter(item => item.tags.includes(currentTargetTag)).length;
-            
-            // Goal is either collect all of them or a max cap of 3
-            requiredTargetCount = Math.min(totalCorrectOnGrid, 3);
-
-            // Render text layouts
-            document.getElementById('objective-counter').textContent = `Progress: ${roundsCleared}/${totalRoundsToWin} Rounds | Target: Find ${requiredTargetCount}`;
-            document.getElementById('objective-instruction').textContent = `Tap ${requiredTargetCount} [${activeCategory.label}]!`;
-
-            renderGridElements();
-        }
-
-        function renderGridElements() {
-            const canvas = document.getElementById('item-grid-canvas');
-            canvas.innerHTML = "";
-
-            itemsOnGrid.forEach((item, index) => {
-                const cell = document.createElement('div');
-                cell.className = "grid-item";
-                cell.id = `cell-${index}`;
-                
-                const emojiSpan = document.createElement('span');
-                emojiSpan.className = "item-emoji";
-                emojiSpan.textContent = item.emoji;
-
-                const nameSpan = document.createElement('span');
-                nameSpan.className = "item-name";
-                nameSpan.textContent = item.name;
-
-                cell.appendChild(emojiSpan);
-                cell.appendChild(nameSpan);
-                
-                cell.onclick = () => handleItemTap(index);
-                canvas.appendChild(cell);
-            });
-        }
-
-        function handleItemTap(index) {
-            const cell = document.getElementById(`cell-${index}`);
-            
-            if(selectedIndices.includes(index)) {
-                // Deselect if already chosen
-                selectedIndices = selectedIndices.filter(i => i !== index);
-                cell.classList.remove('selected');
-            } else {
-                // Select item
-                if(selectedIndices.length < requiredTargetCount) {
-                    selectedIndices.push(index);
-                    cell.classList.add('selected');
+            chargingInterval = setInterval(() => {
+                if(engineCharge < 100) {
+                    engineCharge += 4;
+                    document.getElementById('powerBar').style.width = `${engineCharge}%`;
                 }
-            }
-
-            // Check if player selected the target capacity requested
-            if(selectedIndices.length === requiredTargetCount) {
-                verifySelectionAnswers();
-            }
+            }, 30);
         }
 
-        function clearSelectedTaps() {
-            selectedIndices = [];
-            document.querySelectorAll('.grid-item').forEach(el => el.classList.remove('selected'));
+        function triggerRocketLaunch() {
+            if(!isCharging) return;
+            clearInterval(chargingInterval);
+            isCharging = false;
+
+            const angleDeg = parseFloat(document.getElementById('angleRange').value);
+            const angleRad = (angleDeg - 90) * (Math.PI / 180); // Calculate standard physics vectors
+            
+            // Convert engine power parameter to velocity components
+            const totalVelocity = (engineCharge / 100) * 9 + 3; // range: 3 to 12
+            
+            rocket.vx = Math.cos(angleRad) * totalVelocity;
+            rocket.vy = Math.sin(angleRad) * totalVelocity;
+            rocket.active = true;
+            
+            document.getElementById('launchBtn').disabled = true;
         }
 
-        function verifySelectionAnswers() {
-            // Check if all selected indices fit the current target logic tags
-            let totalCorrectValidated = 0;
-            selectedIndices.forEach(idx => {
-                if(itemsOnGrid[idx].tags.includes(currentTargetTag)) {
-                    totalCorrectValidated++;
-                }
-            });
+        function resetRocketState() {
+            rocket.x = 275;
+            rocket.y = 330;
+            rocket.vx = 0;
+            rocket.vy = 0;
+            rocket.active = false;
+            document.getElementById('powerBar').style.width = '0%';
+            document.getElementById('launchBtn').disabled = false;
 
-            if(totalCorrectValidated === requiredTargetCount) {
-                // Success! Progress match upwards
-                roundsCleared++;
-                document.getElementById('p1-score').textContent = `${roundsCleared}/${totalRoundsToWin}`;
-                document.getElementById('r-p1-score').textContent = roundsCleared;
-
-                myFinished = (roundsCleared >= totalRoundsToWin);
-
-                // Sync counts to network immediately
-                connection.send({
-                    type: 'PROGRESS',
-                    count: roundsCleared,
-                    finished: myFinished
-                });
-
-                if(!myFinished) {
-                    loadNewMissionRound();
-                } else {
-                    document.getElementById('p1-status').textContent = "Finished";
-                    showScreen('results-screen');
-                    liveCalculateScoreEnd();
-                }
+            // Adaptive difficulty escalations based on your current score tier (Every 2 rounds)
+            const difficultyTier = Math.floor(rocketsDocked / 2);
+            spaceStation.speed = 2 + difficultyTier * 1.2; 
+            gravityWell.mass = 150 + difficultyTier * 60; // Pulls harder
+            
+            // Introduce Unbalanced Horizontal Wind Forces starting past round 4
+            if(rocketsDocked >= 4) {
+                solarWindX = (Math.random() > 0.5 ? 1 : -1) * (difficultyTier * 0.04);
             } else {
-                // Mistake! Flash warning color adjustments and reset taps automatically
-                selectedIndices.forEach(idx => {
-                    const el = document.getElementById(`cell-${idx}`);
-                    if(el) el.style.background = "#b91c1c";
-                });
-                setTimeout(() => {
-                    loadNewMissionRound(); // reload and reshuffle grid penalties
-                }, 600);
+                solarWindX = 0;
             }
         }
 
-        function triggerAlertBanner() {
+        function triggerSolarAlert() {
             const banner = document.getElementById('difficulty-alert');
             banner.style.display = 'block';
             setTimeout(() => { banner.style.display = 'none'; }, 2500);
         }
 
-        function liveCalculateScoreEnd() {
-            const banner = document.getElementById('end-winner-banner');
+        // Core Physics Simulation loop runs at 60fps
+        function startPhysicsLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 1. Move Space Station Target (Horizontal Loop boundary bounces)
+            spaceStation.x += spaceStation.speed * spaceStation.direction;
+            if(spaceStation.x <= 40 || spaceStation.x >= canvas.width - 40) {
+                spaceStation.direction *= -1;
+            }
+
+            // 2. Vector physics math handling rocket trajectory
+            if(rocket.active) {
+                // Apply Unbalanced Solar Winds drift forces
+                rocket.vx += solarWindX;
+
+                // Gravitational force formulas: F = G*(m1*m2)/r^2
+                let dx = gravityWell.x - rocket.x;
+                let dy = gravityWell.y - rocket.y;
+                let distance = Math.sqrt(dx*dx + dy*dy);
+
+                if(distance > 5) {
+                    let forceMultiplier = gravityWell.mass / (distance * distance);
+                    rocket.vx += (dx / distance) * forceMultiplier;
+                    rocket.vy += (dy / distance) * forceMultiplier;
+                }
+
+                // Update position coordinate states
+                rocket.x += rocket.vx;
+                rocket.y += rocket.vy;
+
+                // Collision detection checking: Did it crash into the Gravity Well obstacle?
+                let crashDx = gravityWell.x - rocket.x;
+                let crashDy = gravityWell.y - rocket.y;
+                let crashDist = Math.sqrt(crashDx*crashDx + crashDy*crashDy);
+                
+                if(crashDist < (gravityWell.radius + rocket.radius)) {
+                    resetRocketState();
+                }
+
+                // Collision detection checking: Did it hit boundary walls?
+                if(rocket.x < 0 || rocket.x > canvas.width || rocket.y < 0 || rocket.y > canvas.height) {
+                    resetRocketState();
+                }
+
+                // Success validation: Did it reach and collide with the Space Station?
+                let targetDx = spaceStation.x - rocket.x;
+                let targetDy = spaceStation.y - rocket.y;
+                let targetDist = Math.sqrt(targetDx*targetDx + targetDy*targetDy);
+
+                if(targetDist < (spaceStation.radius + rocket.radius)) {
+                    processSuccessfulDock();
+                }
+            }
+
+            // Render Frame elements
+            drawSimulationElements();
+
+            animationFrameId = requestAnimationFrame(startPhysicsLoop);
+        }
+
+        function drawSimulationElements() {
+            // Draw Solar Winds visual cues if active
+            if(Math.abs(solarWindX) > 0) {
+                ctx.fillStyle = "rgba(56, 189, 248, 0.06)";
+                for(let i = 0; i < 5; i++) {
+                    ctx.fillRect((Date.now()/5 + i*120) % canvas.width, 0, 4, canvas.height);
+                }
+            }
+
+            // Draw Space Station Dock Target
+            ctx.beginPath();
+            ctx.arc(spaceStation.x, spaceStation.y, spaceStation.radius, 0, Math.PI * 2);
+            ctx.fillStyle = "#a855f7";
+            ctx.strokeStyle = "#c084fc";
+            ctx.lineWidth = 3;
+            ctx.fill();
+            ctx.stroke();
+            // Core light indicator
+            ctx.beginPath();
+            ctx.arc(spaceStation.x, spaceStation.y, 5, 0, Math.PI * 2);
+            ctx.fillStyle = varColorText();
+            ctx.fill();
+
+            // Draw Gravitational Obstacle Asteroid / Black Hole
+            ctx.beginPath();
+            ctx.arc(gravityWell.x, gravityWell.y, gravityWell.radius, 0, Math.PI * 2);
+            ctx.fillStyle = "#f43f5e";
+            ctx.shadowColor = "#f43f5e";
+            ctx.shadowBlur = 15;
+            ctx.fill();
+            ctx.shadowBlur = 0; // reset glow shadow state
+
+            // Draw Launchpad Base Line
+            ctx.fillStyle = "#1e2937";
+            ctx.fillRect(225, 345, 100, 15);
+
+            // Draw Rocket Projectile
+            ctx.beginPath();
+            ctx.arc(rocket.x, rocket.y, rocket.radius, 0, Math.PI * 2);
+            ctx.fillStyle = rocket.active ? varColorSuccess() : varColorPrimary();
+            ctx.fill();
+        }
+
+        function varColorText() { return "#ffffff"; }
+        function varColorPrimary() { return "#38bdf8"; }
+        function varColorSuccess() { return "#4ade80"; }
+
+        function processSuccessfulDock() {
+            rocketsDocked++;
+            document.getElementById('p1-score').textContent = `${rocketsDocked}/${totalToWin}`;
+            document.getElementById('r-p1-score').textContent = rocketsDocked;
+            
+            myFinished = (rocketsDocked >= totalToWin);
+
+            // Sync scores immediately across direct connection nodes
+            connection.send({
+                type: 'UPDATE',
+                count: rocketsDocked,
+                finished: myFinished
+            });
+
+            if(rocketsDocked > 0 && rocketsDocked % 2 === 0 && !myFinished) {
+                triggerSolarAlert();
+                connection.send({ type: 'WIND_ALERT' });
+            }
+
+            resetRocketState();
+
+            if(myFinished) {
+                cancelAnimationFrame(animationFrameId);
+                showScreen('results-screen');
+                evaluateMatchEndCondition();
+            }
+        }
+
+        function evaluateMatchEndCondition() {
+            const label = document.getElementById('end-winner-banner');
             
             if(myFinished && oppFinished) {
-                if(roundsCleared > oppClearedCount) {
-                    banner.innerText = `👑 Victory achieved!\n🥇 You sorted resources faster than ${oppName}!`;
-                    banner.style.color = "#10b981";
-                } else if(oppClearedCount > roundsCleared) {
-                    banner.innerText = `🎉 ${oppName} Wins!\n🥈 Better luck next sorting run!`;
-                    banner.style.color = "#ef4444";
+                if(rocketsDocked > oppDockedCount) {
+                    label.innerText = `👑 Simulation Won!\nYou successfully docked your fleet faster than ${oppName}!`;
+                    label.style.color = "#4ade80";
+                } else if(oppDockedCount > rocketsDocked) {
+                    label.innerText = `🎉 ${oppName} Wins!\nYour fleet was pulled off course by the forces of gravity!`;
+                    label.style.color = "#f87171";
                 } else {
-                    banner.innerText = `🤝 Stellar Synchronization!\nIt's a complete tie score!`;
-                    banner.style.color = "#fef08a";
+                    label.innerText = `🤝 Equal Trajectories!\nBoth pilots hit perfect orbital ties!`;
+                    label.style.color = "#fef08a";
                 }
             } else if(myFinished && !oppFinished) {
-                banner.innerText = `You finished your 10 rounds!\nYour Time: Finished | ${oppName} Progress: ${oppClearedCount}/10\n(Watch closely, your opponent is still tapping resources...)`;
-                banner.style.color = "#f59e0b";
+                label.innerText = `All your rockets are docked!\nYour Score: 10/10 | ${oppName} Score: ${oppDockedCount}/10\n(Standby, your opponent is fighting gravitational pull...)`;
+                label.style.color = "#fbbf24";
             }
         }
     </script>
