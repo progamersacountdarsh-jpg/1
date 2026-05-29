@@ -3,433 +3,344 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Echoes of the Cosmos: Co-Op RPG</title>
-    <!-- Stable global PeerJS CDN for instant P2P multiplayer -->
+    <title>Chemical Reaction: The Catalyst Saboteur</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
     <style>
         :root {
-            --bg: #090d16;
-            --card-bg: #111827;
-            --primary: #a855f7;
-            --success: #10b981;
-            --danger: #ef4444;
-            --text: #f3f4f6;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --electric: #38bdf8;
             --accent: #f59e0b;
+            --danger: #ef4444;
+            --success: #10b981;
+            --text: #f3f4f6;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0; padding: 0;
-            font-family: 'Courier New', Courier, monospace;
-            user-select: none;
-        }
-
-        body {
-            background: radial-gradient(circle at center, #1e1b4b, var(--bg));
-            color: var(--text);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 15px;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 700px;
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 25px;
-            box-shadow: 0 0 30px rgba(168, 85, 247, 0.2);
-            border: 2px solid #1f2937;
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; user-select: none; }
+        body { background: radial-gradient(circle, #1e1b4b, var(--bg)); color: var(--text); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 10px; }
+        
+        .container { width: 100%; max-width: 750px; background: var(--card); border-radius: 20px; padding: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); border: 2px solid #334155; }
         .screen { display: none; }
         .screen.active { display: block; }
 
-        h1, h2 {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #c084fc;
-            text-shadow: 0 0 10px rgba(168, 85, 247, 0.4);
+        input { width: 100%; padding: 12px; border-radius: 8px; border: 2px solid var(--electric); background: rgba(0,0,0,0.3); color: white; font-size: 16px; margin-bottom: 15px; text-align: center; outline: none; }
+        button { width: 100%; padding: 14px; background: var(--accent); color: #0f172a; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 #b45309; margin-bottom: 10px; }
+        button:active { transform: translateY(2px); box-shadow: none; }
+
+        /* --- HOW TO PLAY MODAL SYSTEM --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(11, 15, 25, 0.95);
+            backdrop-filter: blur(8px);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 9999;
+            opacity: 1; transition: opacity 0.3s ease;
         }
 
-        .input-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; color: var(--accent); font-weight: bold; }
-        input[type="text"] {
-            width: 100%; padding: 14px; border-radius: 8px;
-            border: 2px solid var(--primary); background: rgba(0,0,0,0.4);
-            color: #00ffcc; font-size: 18px; text-align: center; outline: none;
+        .modal-card {
+            background: #1e293b;
+            border: 2px solid #38bdf8;
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.2);
+            width: 90%; max-width: 500px;
+            border-radius: 16px; padding: 25px;
+            animation: scaleUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        .menu-btn {
-            width: 100%; padding: 15px; background: var(--primary);
-            color: white; border: none; border-radius: 8px;
-            font-size: 18px; font-weight: bold; cursor: pointer;
-            transition: 0.2s; margin-top: 10px;
-            box-shadow: 0 4px 0 #7e22ce;
+        @keyframes scaleUp {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
-        .menu-btn:active { transform: translateY(2px); box-shadow: none; }
 
-        .divider { text-align: center; margin: 15px 0; color: #4b5563; }
-
-        /* Status UI Header */
-        .status-bar {
-            display: flex; justify-content: space-between; align-items: center;
-            background: #030712; padding: 12px 20px; border-radius: 8px;
-            margin-bottom: 20px; border: 1px solid #374151;
-        }
-        .health-container { flex: 1; margin-right: 20px; }
-        .health-label { font-size: 12px; text-transform: uppercase; margin-bottom: 4px; color: var(--danger); }
-        .health-bg { width: 100%; height: 14px; background: #1f2937; border-radius: 7px; overflow: hidden; }
-        .health-fill { width: 100%; height: 100%; background: var(--danger); transition: width 0.4s ease; }
+        .modal-card h2 { color: #f59e0b; text-align: center; margin-bottom: 15px; }
+        .rule-list { margin: 20px 0; padding-left: 20px; }
+        .rule-list li { margin-bottom: 12px; font-size: 15px; line-height: 1.5; color: #f3f4f6; }
         
-        .inventory-panel { text-align: right; }
-        .inv-items { font-size: 13px; color: var(--success); font-weight: bold; }
-
-        /* Story Terminal Viewport */
-        .story-box {
-            background: #020617; border: 2px solid #374151;
-            padding: 20px; border-radius: 8px; min-height: 150px;
-            margin-bottom: 20px; line-height: 1.6; font-size: 15px;
-            color: #34d399; position: relative;
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
+        .close-modal-btn {
+            width: 100%; padding: 12px; background: #10b981;
+            color: #0f172a; border: none; border-radius: 8px;
+            font-size: 16px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 4px 0 #047857; transition: 0.1s;
         }
+        .close-modal-btn:active { transform: translateY(2px); box-shadow: none; }
 
-        /* Ambient Dynamic Scene Backdrop Graphic (CSS Minimalist Shape Art) */
-        .scene-graphic {
-            width: 100%; height: 80px; background: #1f2937;
-            margin-bottom: 20px; border-radius: 8px; overflow: hidden;
-            position: relative; display: flex; align-items: center; justify-content: center;
-        }
-
-        /* Multi-choice Node Layout */
-        .choice-stack { display: flex; flex-direction: column; gap: 12px; }
-        .choice-btn {
-            width: 100%; padding: 14px; background: #1f2937;
-            color: var(--text); border: 1px solid #4b5563; text-align: left;
-            border-radius: 8px; cursor: pointer; transition: 0.2s;
-            position: relative; font-size: 14px;
-        }
-        .choice-btn:hover { background: #374151; border-color: var(--primary); }
-        .choice-btn.my-vote { border-left: 6px solid var(--primary); padding-left: 10px; }
+        /* HOST SERVER SCREEN VISUALS */
+        .lab-layout { display: grid; grid-template-columns: 1.8fr 1.2fr; gap: 20px; }
+        .beaker-display { background: #020617; border: 4px solid #475569; border-radius: 0 0 40px 40px; position: relative; height: 300px; overflow: hidden; box-shadow: inset 0 -20px 50px rgba(56,189,248,0.1); }
+        .fluid-line { position: absolute; bottom: 0; left: 0; width: 100%; height: 40%; background: rgba(14,165,233,0.2); transition: all 0.5s ease; }
         
-        /* Voting Tokens overlay tags */
-        .vote-indicator {
-            position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
-            font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: bold;
-        }
-        .vote-p1 { background: #7e22ce; color: white; }
-        .vote-p2 { background: #2563eb; color: white; }
+        .atom { position: absolute; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; color: white; animation: float 3s infinite alternate ease-in-out; }
+        @keyframes float { from { transform: translateY(0) rotate(0deg); } to { transform: translateY(-15px) rotate(20deg); } }
+
+        .recipe-card { background: #0f172a; border-left: 5px solid var(--electric); padding: 12px; border-radius: 6px; margin-bottom: 15px; }
+
+        /* STUDENT CONTROLLER VISUALS */
+        .role-banner { text-align: center; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-weight: bold; font-size: 18px; }
+        .element-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px; }
+        .element-card { background: #334155; border: 2px solid #475569; border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; box-shadow: 0 6px 0 #1e293b; }
+        .element-card:active { transform: translateY(4px); box-shadow: 0 2px 0 #1e293b; }
+        .element-sym { font-size: 32px; font-weight: bold; display: block; margin-bottom: 5px; }
     </style>
 </head>
 <body>
 
+    <div id="instructionModal" class="modal-overlay">
+        <div class="modal-card">
+            <h2>🎮 How to Play & Setup</h2>
+            <ul class="rule-list">
+                <li><strong>Step 1 (The Screen):</strong> One computer (like the Teacher's) clicks <b>"Host Laboratory Terminal"</b> to show the master beaker on the projector.</li>
+                <li><strong>Step 2 (The Controls):</strong> Students open this file on their own phones/tablets, enter a name, type the 4-digit code from the projector, and click <b>"Enter Laboratory"</b>.</li>
+                <li><strong>Step 3 (Secret Roles):</strong> You are assigned a role! **Chemists** must launch the correct atoms to build formulas. **Saboteurs** try to secretly ruin formulas or drop toxic waste!</li>
+                <li><strong>Step 4 (Adapt):</strong> Look out for random temperature and recipe updates that shake up your elements without warning!</li>
+            </ul>
+            <button class="close-modal-btn" onclick="closeInstructions()">Got It! Let's Play</button>
+        </div>
+    </div>
+
     <div class="container">
-        <!-- SCREEN 1: Peer Connection Terminal -->
+        <div id="surge-alert" style="display:none; background:linear-gradient(90deg, #ca8a04, #b91c1c); text-align:center; padding:10px; font-weight:bold; border-radius:8px; margin-bottom:15px; color:white;">⚠️ LAB WARNING: TEMPERATURE SPIKE — RECIPE CHANGED! ⚠️</div>
+
         <div id="setup-screen" class="screen active">
-            <h1>📡 DEEP-SPACE CO-OP RPG</h1>
-            <div class="input-group">
-                <label>Astronaut Callsign:</label>
-                <input type="text" id="username" placeholder="Designate identity...">
+            <h1 style="color:#67e8f9; text-align:center; margin-bottom:25px;">🧪 Chemical Reaction: Saboteur 💥</h1>
+            
+            <div style="background:rgba(0,0,0,0.2); padding:15px; border-radius:12px; margin-bottom:20px;">
+                <h3 style="color:var(--accent); margin-bottom:10px;">🖥️ Classroom Projector View</h3>
+                <button onclick="setupLabServer()">Host Laboratory Terminal</button>
             </div>
-            <hr style="opacity: 0.1; margin: 20px 0;">
-            <button class="menu-btn" onclick="initializeLobby(true)">Initialize Sub-Station (Host)</button>
-            <div class="divider">OR</div>
-            <div class="input-group">
-                <label>Target Sub-Station Frequency:</label>
-                <input type="text" id="room-input" placeholder="Enter frequency index...">
+
+            <div style="background:rgba(0,0,0,0.2); padding:15px; border-radius:12px;">
+                <h3 style="color:#a7f3d0; margin-bottom:10px;">📱 Student Device View</h3>
+                <input type="text" id="player-name" placeholder="Enter Scientist Nickname...">
+                <input type="text" id="room-code" placeholder="Enter 4-Digit Lab Code">
+                <button style="background:#2563eb; color:white; box-shadow:0 4px 0 #1d4ed8;" onclick="connectToLabServer()">Enter Laboratory</button>
             </div>
-            <button class="menu-btn" style="background:#2563eb; box-shadow:0 4px 0 #1d4ed8;" onclick="initializeLobby(false)">Patch into Frequency (Join)</button>
         </div>
 
-        <!-- SCREEN 2: Transmission Hold -->
-        <div id="waiting-screen" class="screen">
-            <h2>Establishing Communications</h2>
-            <div id="code-box" style="background:rgba(0,0,0,0.4); padding:20px; border-radius:8px; text-align:center; border:1px dashed var(--accent); margin-bottom:20px; display:none;">
-                Relay this patch code to your partner node:<br><br>
-                <span id="display-code" style="font-size:28px; font-weight:bold; color:var(--success); letter-spacing:2px;">---</span>
+        <div id="server-screen" class="screen">
+            <div style="display:flex; justify-content:between; align-items:center; margin-bottom:15px; width:100%;">
+                <h2 style="color:#38bdf8; flex:1;">Main Beaker Chamber</h2>
+                <span id="server-code-lbl" style="background:#0f172a; padding:6px 15px; border-radius:8px; font-weight:bold; color:var(--accent);">CODE: ----</span>
             </div>
-            <div style="text-align:center; font-style:italic; color:#9ca3af; animation: pulse 1.5s infinite;">Awaiting biometric sync from secondary explorer...</div>
+
+            <div class="lab-layout">
+                <div>
+                    <div id="beaker" class="beaker-display">
+                        <div id="fluid-base" class="fluid-line"></div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:14px;">
+                        <span>Progress: <b id="prog-lbl" style="color:var(--success);">0/5 Built</b></span>
+                        <span>Beaker Instability: <b id="instab-lbl" style="color:var(--danger);">0%</b></span>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="recipe-card">
+                        <span style="font-size:11px; color:#94a3b8; text-transform:uppercase;">Target Compound</span>
+                        <h3 id="recipe-name" style="color:white; margin:4px 0;">Water</h3>
+                        <p id="recipe-formula" style="font-size:18px; font-weight:bold; color:var(--accent); letter-spacing:1px;">H₂O</p>
+                        <p id="recipe-desc" style="font-size:12px; color:#94a3b8; margin-top:5px;">Requires: 2 Hydrogen, 1 Oxygen</p>
+                    </div>
+
+                    <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; max-height:160px; overflow-y:auto;">
+                        <h4 style="font-size:12px; text-transform:uppercase; color:#64748b; margin-bottom:5px;">Lab Log Feed</h4>
+                        <div id="lab-log" style="font-size:11px; font-family:monospace; color:#34d399;"></div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- SCREEN 3: Interactive Narrative Engine Window -->
-        <div id="game-screen" class="screen">
-            <div class="status-bar">
-                <div class="health-container">
-                    <div class="health-label">⚡ Shared Life Support (O₂): <span id="hp-num">100</span>%</div>
-                    <div class="health-bg"><div id="hp-bar" class="health-fill"></div></div>
+        <div id="client-screen" class="screen">
+            <div id="role-tag" class="role-banner">Assigning Lab Credentials...</div>
+            <p style="text-align:center; font-size:13px; color:#94a3b8;">Tap an element to inject it into the communal central beaker!</p>
+            
+            <div class="element-grid">
+                <div class="element-card" style="border-color:#ef4444;" onclick="submitElementAtom('H')">
+                    <span class="element-sym" style="color:#ef4444;">H</span>
+                    <span style="font-size:12px; color:#94a3b8;">Hydrogen</span>
                 </div>
-                <div class="inventory-panel">
-                    <div style="font-size:10px; color:#9ca3af; text-transform:uppercase;">Shared Cargo Inventory</div>
-                    <div id="inventory-list" class="inv-items">Empty</div>
+                <div class="element-card" style="border-color:#3b82f6;" onclick="submitElementAtom('O')">
+                    <span class="element-sym" style="color:#3b82f6;">O</span>
+                    <span style="font-size:12px; color:#94a3b8;">Oxygen</span>
+                </div>
+                <div class="element-card" style="border-color:#10b981;" onclick="submitElementAtom('C')">
+                    <span class="element-sym" style="color:#10b981;">C</span>
+                    <span style="font-size:12px; color:#94a3b8;">Carbon</span>
+                </div>
+                <div class="element-card" style="border-color:#a855f7;" onclick="submitElementAtom('☠️')">
+                    <span class="element-sym" style="color:#a855f7;">☠️</span>
+                    <span style="font-size:12px; color:#94a3b8;">Toxic Waste</span>
                 </div>
             </div>
-
-            <!-- Visual Graphic Indicator -->
-            <div id="graphic-backdrop" class="scene-graphic"></div>
-
-            <!-- Master Text Node Injected Here -->
-            <div id="story-body" class="story-box"></div>
-
-            <!-- Choice Stack Dynamic Render Canvas -->
-            <div id="choices-box" class="choice-stack"></div>
         </div>
     </div>
 
     <script>
-        let peer = null, connection = null;
-        let isHost = false;
-        let myName = "", oppName = "Partner";
-        
-        // Shared State Array Structure
-        let gameState = {
-            currentScene: "intro",
-            oxygen: 100,
-            inventory: [],
-            p1Vote: null,
-            p2Vote: null
-        };
+        let peer = null, serverConn = null;
+        let clientsList = [];
+        let assignedRoles = {};
 
-        // Master Story Database (Single Structure Layout Model)
-        const storyTree = {
-            intro: {
-                text: "CRASH SIGHT. Warning alarms echo inside your helmets. Your landing capsule has torn open on a jagged neon-purple mountain plain. Oxygen filters are venting into the atmosphere. You must move quickly.",
-                graphic: "radial-gradient(circle, #7e22ce 10%, #030712 90%)",
-                choices: [
-                    { text: "Scavenge the fiery hull wreckage for equipment.", next: "scavenge" },
-                    { text: "March immediately toward the glowing valley base.", next: "valley" }
-                ]
-            },
-            scavenge: {
-                text: "The hull plates are blazing hot, but your combined efforts allow you to pull open an intact survival chest. Inside, you salvage a high-grade Plasma Torch! However, inhaling the toxic localized smoke costs the crew 15% Oxygen.",
-                graphic: "linear-gradient(0deg, #ef4444 0%, #020617 80%)",
-                item: "Plasma Torch",
-                damage: 15,
-                choices: [
-                    { text: "With tool in hand, proceed down to the low valley.", next: "valley" }
-                ]
-            },
-            valley: {
-                text: "You reach the low basin. A giant sealed blast door blocks the mountain pass. It appears to belong to an abandoned drilling facility. Heavy high-voltage power lines hang loose nearby, crackling with raw electricity.",
-                graphic: "linear-gradient(90deg, #1f2937, #111827)",
-                choices: [
-                    { text: "Attempt to override the door panel with the Plasma Torch.", next: "door_torch", requiresItem: "Plasma Torch" },
-                    { text: "Grab the exposed live power lines to jumpstart the console.", next: "door_shock" },
-                    { text: "Search for a weak ventilation shaft around the perimeter.", next: "vent_route" }
-                ]
-            },
-            door_torch: {
-                text: "SUCCESS! You ignite the Plasma Torch and cut directly through the door lock gears. The blast doors grind open effortlessly, revealing a clean shortcut path to an operational landing bay. You have escaped safely! VICTORY.",
-                graphic: "radial-gradient(circle, #10b981 20%, #020617 100%)",
-                choices: [] // Terminal leaf endpoint
-            },
-            door_shock: {
-                text: "The moment both your spacesuits contact the exposed line, a violent thermal surge loops through your main life-support arrays. The doors click open, but the catastrophic feedback loops drains 50% Oxygen instantly.",
-                graphic: "linear-gradient(135deg, #eab308, #000)",
-                damage: 50,
-                choices: [
-                    { text: "Stumble through the open doorway before you collapse.", next: "landing_bay" }
-                ]
-            },
-            vent_route: {
-                text: "You crawl inside the cramped metal ventilation shafts. Halfway through, a massive automated filtration fan turns on! It begins pulling your bodies toward the blades. You need a structural block.",
-                graphic: "repeating-linear-gradient(45deg, #374151, #1f2937 40px)",
-                choices: [
-                    { text: "Jam the Plasma Torch into the fan drive shaft assembly.", next: "fan_jam_torch", requiresItem: "Plasma Torch" },
-                    { text: "Brace together tightly and attempt to push against the airflow.", next: "fan_fail" }
-                ]
-            },
-            fan_jam_torch: {
-                text: "The metal teeth grind against your durable salvage tool! The fan sparks, stops spinning, and explodes out backward. You crawl safely out of the structural exit and drop directly down into the clean landing bay. VICTORY.",
-                graphic: "radial-gradient(circle, #10b981 20%, #020617 100%)",
-                choices: []
-            },
-            fan_fail: {
-                text: "The wind pressure is too overwhelming for human force alone. You are tumbled down the chute, fracturing your secondary chest units. You lose 40% Oxygen before slipping out into the hangar deck.",
-                graphic: "linear-gradient(180deg, #ef4444, #000)",
-                damage: 40,
-                choices: [
-                    { text: "Drag your bodies onto the hangar flight deck.", next: "landing_bay" }
-                ]
-            },
-            landing_bay: {
-                text: "You step out into a pristine automated landing bay. An active scout cruiser sits warmed up on the center pad, its boarding ramp extended. You have successfully bypassed the deadly lunar storms! VICTORY.",
-                graphic: "radial-gradient(circle, #06b6d4 10%, #111827 90%)",
-                choices: []
-            },
-            dead: {
-                text: "CRITICAL FAIL. Your life support readings flatline into zeros. The harsh atmosphere of the moon breaches your suits as your systems run completely cold. MISSION FAILED.",
-                graphic: "solid #000",
-                choices: []
-            }
-        };
+        let scores = { built: 0, instability: 0 };
+        const recipesPool = [
+            { name: "Water", formula: "H₂O", reqs: { H: 2, O: 1 }, text: "Requires: 2 Hydrogen, 1 Oxygen" },
+            { name: "Carbon Dioxide", formula: "CO₂", reqs: { C: 1, O: 2 }, text: "Requires: 1 Carbon, 2 Oxygen" },
+            { name: "Methane Gas", formula: "CH₄", reqs: { C: 1, H: 4 }, text: "Requires: 1 Carbon, 4 Hydrogen" }
+        ];
+        let activeRecipe = recipesPool[0];
+        let currentBeakerElements = { H: 0, O: 0, C: 0 };
 
-        function showScreen(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
+        function closeInstructions() {
+            const modal = document.getElementById('instructionModal');
+            modal.style.opacity = '0';
+            setTimeout(() => { modal.style.display = 'none'; }, 300);
         }
 
-        // Multiplayer Network Initialization
-        function initializeLobby(hostFlag) {
-            isHost = hostFlag;
-            myName = document.getElementById('username').value.trim() || (isHost ? "Explorer A" : "Explorer B");
-            showScreen('waiting-screen');
+        // SERVER CORE HOST SYSTEM
+        function setupLabServer() {
+            showScreen('server-screen');
+            const pin = Math.floor(1000 + Math.random() * 9000);
+            document.getElementById('server-code-lbl').textContent = `LAB CODE: ${pin}`;
 
-            if(isHost) {
-                const code = Math.floor(1000 + Math.random() * 9000);
-                peer = new Peer(`space-${code}`);
-                peer.on('open', (id) => {
-                    document.getElementById('code-box').style.display = 'block';
-                    document.getElementById('display-code').textContent = id;
-                });
-                peer.on('connection', (conn) => {
-                    connection = conn;
-                    setupNetworkHooks();
-                });
-            } else {
-                const targetCode = document.getElementById('room-input').value.trim();
-                if(!targetCode) return alert("Frequency code mandatory!");
-                peer = new Peer();
-                peer.on('open', () => {
-                    connection = peer.connect(targetCode);
-                    setupNetworkHooks();
-                });
-            }
-        }
-
-        function setupNetworkHooks() {
-            connection.on('open', () => {
-                connection.send({ type: 'HANDSHAKE', name: myName });
-            });
-
-            connection.on('data', (data) => {
-                if(data.type === 'HANDSHAKE') {
-                    oppName = data.name;
-                    showScreen('game-screen');
-                    renderCurrentSceneNode();
-                } else if(data.type === 'VOTE_CAST') {
-                    if(isHost) {
-                        gameState.p2Vote = data.index;
-                        evaluateVoteResolution();
-                    } else {
-                        // Guest mirror layout display update
-                        updateVisualVoteMarkers(data.p1Index, data.p2Index);
-                    }
-                } else if(data.type === 'STATE_SYNC') {
-                    gameState = data.state;
-                    renderCurrentSceneNode();
-                }
-            });
-        }
-
-        // Master Layout Injection Function ("No-Repeat" Trick)
-        function renderCurrentSceneNode() {
-            const node = storyTree[gameState.currentScene];
-            
-            // 1. Process damage updates if newly applied to state
-            document.getElementById('hp-num').textContent = gameState.oxygen;
-            document.getElementById('hp-bar').style.width = `${gameState.oxygen}%`;
-
-            // 2. Render Shared Cargo inventory list
-            document.getElementById('inventory-list').textContent = 
-                gameState.inventory.length > 0 ? gameState.inventory.join(', ') : "Empty Space";
-
-            // 3. Inject Scene Text Content and change background artwork
-            document.getElementById('story-body').textContent = node.text;
-            document.getElementById('graphic-backdrop').style.background = node.graphic;
-
-            // 4. Render Dynamic Choice Button Options
-            const box = document.getElementById('choices-box');
-            box.innerHTML = "";
-
-            node.choices.forEach((choice, index) => {
-                // If item is required and team doesn't have it, don't show choice button
-                if(choice.requiresItem && !gameState.inventory.includes(choice.requiresItem)) {
-                    return;
-                }
-
-                const btn = document.createElement('button');
-                btn.className = "choice-btn";
-                btn.textContent = choice.text;
-
-                // Add active tracking tags if player has clicked it
-                let currentVoteIndex = isHost ? gameState.p1Vote : gameState.p2Vote;
-                if(currentVoteIndex === index) {
-                    btn.classList.add('my-vote');
-                }
-
-                btn.onclick = () => castChoiceVote(index);
-                box.appendChild(btn);
-            });
-
-            // Mirror markers across devices
-            updateVisualVoteMarkers(gameState.p1Vote, gameState.p2Vote);
-        }
-
-        function castChoiceVote(index) {
-            if(isHost) {
-                gameState.p1Vote = (gameState.p1Vote === index) ? null : index; // toggle
-                evaluateVoteResolution();
-            } else {
-                connection.send({ type: 'VOTE_CAST', index: index });
-            }
-        }
-
-        function evaluateVoteResolution() {
-            // Host processes voting conditions and forces synchronous engine updates
-            if(gameState.p1Vote !== null && gameState.p1Vote === gameState.p2Vote) {
-                const node = storyTree[gameState.currentScene];
-                const finalChoice = node.choices[gameState.p1Vote];
-
-                // Advance scene pathway destination
-                gameState.currentScene = finalChoice.next;
+            peer = new Peer(`lab-${pin}`);
+            peer.on('connection', (conn) => {
+                clientsList.push(conn);
                 
-                // Clear active processing buffers
-                gameState.p1Vote = null;
-                gameState.p2Vote = null;
-
-                // Handle item pickup modifiers
-                const nextNode = storyTree[gameState.currentScene];
-                if(nextNode.item && !gameState.inventory.includes(nextNode.item)) {
-                    gameState.inventory.push(nextNode.item);
-                }
-                // Handle damage attributes
-                if(nextNode.damage) {
-                    gameState.oxygen = Math.max(0, gameState.oxygen - nextNode.damage);
-                    if(gameState.oxygen <= 0) {
-                        gameState.currentScene = "dead";
+                conn.on('data', (data) => {
+                    if(data.type === 'JOIN') {
+                        let role = Math.random() > 0.75 ? 'SABOTEUR' : 'CHEMIST';
+                        assignedRoles[conn.peer] = { name: data.name, role: role };
+                        conn.send({ type: 'ASSIGN_ROLE', role: role });
+                        logFeedEvent(`${data.name} entered the laboratory.`);
+                    } else if(data.type === 'ELEMENT') {
+                        injectElementIntoBeaker(conn.peer, data.atom);
                     }
-                }
-            }
+                });
+            });
 
-            // Sync structural game changes across connection
-            connection.send({ type: 'STATE_SYNC', state: gameState });
-            renderCurrentSceneNode();
+            setInterval(triggerRecipeChaosEvent, 40000);
         }
 
-        function updateVisualVoteMarkers(p1Idx, p2Idx) {
-            // Dynamically query button offsets to append real-time alignment tags
-            const buttons = document.querySelectorAll('.choice-btn');
-            buttons.forEach((btn, idx) => {
-                // Clear out stale indicator span tags
-                const tags = btn.querySelectorAll('.vote-indicator');
-                tags.forEach(t => t.remove());
+        function injectElementIntoBeaker(peerId, atomSymbol) {
+            let worker = assignedRoles[peerId] || { name: "Unknown", role: "CHEMIST" };
+            logFeedEvent(`${worker.name} added atom: [${atomSymbol}]`);
 
-                if(p1Idx === idx) {
-                    const marker = document.createElement('span');
-                    marker.className = "vote-indicator vote-p1";
-                    marker.textContent = isHost ? "YOU" : "P1";
-                    btn.appendChild(marker);
+            const b = document.getElementById('beaker');
+            const bubble = document.createElement('div');
+            bubble.className = "atom";
+            bubble.textContent = atomSymbol;
+            bubble.style.left = `${Math.random() * 70 + 15}%`;
+            bubble.style.bottom = "0px";
+            
+            if(atomSymbol === 'H') bubble.style.background = "#ef4444";
+            else if(atomSymbol === 'O') bubble.style.background = "#3b82f6";
+            else if(atomSymbol === 'C') bubble.style.background = "#10b981";
+            else bubble.style.background = "#a855f7";
+
+            b.appendChild(bubble);
+            setTimeout(() => { bubble.style.bottom = `${Math.random() * 30 + 20}%`; }, 100);
+
+            if(atomSymbol === '☠️') {
+                scores.instability += 20;
+            } else {
+                if(currentBeakerElements[atomSymbol] !== undefined) {
+                    currentBeakerElements[atomSymbol]++;
                 }
-                if(p2Idx === idx) {
-                    const marker = document.createElement('span');
-                    marker.className = "vote-indicator vote-p2";
-                    marker.style.right = (p1Idx === idx) ? "65px" : "10px"; // prevent overlapping tags
-                    marker.textContent = !isHost ? "YOU" : "P2";
-                    btn.appendChild(marker);
+                
+                let target = activeRecipe.reqs;
+                let stepComplete = true;
+                Object.keys(target).forEach(key => {
+                    if(currentBeakerElements[key] < target[key]) stepComplete = false;
+                });
+
+                if(stepComplete) {
+                    scores.built++;
+                    logFeedEvent(`✨ COMPOUND SYNTHESIZED: ${activeRecipe.name}!`);
+                    document.getElementById('fluid-base').style.background = "rgba(16,185,129,0.4)";
+                    setTimeout(() => { document.getElementById('fluid-base').style.background = "rgba(14,165,233,0.2)"; }, 1500);
+                    
+                    currentBeakerElements = { H: 0, O: 0, C: 0 };
+                    document.querySelectorAll('.atom').forEach(a => a.remove());
+                    activeRecipe = recipesPool[Math.floor(Math.random() * recipesPool.length)];
+                    updateRecipeVisuals();
                 }
+
+                let totalPool = currentBeakerElements.H + currentBeakerElements.O + currentBeakerElements.C;
+                let neededPool = 0;
+                Object.values(target).forEach(v => neededPool += v);
+                if(totalPool > neededPool + 3) {
+                    scores.instability += 10;
+                    logFeedEvent("⚠️ Warning: Impurities causing volatility!");
+                }
+            }
+            evaluateMatchResolutions();
+        }
+
+        function updateRecipeVisuals() {
+            document.getElementById('recipe-name').textContent = activeRecipe.name;
+            document.getElementById('recipe-formula').textContent = activeRecipe.formula;
+            document.getElementById('recipe-desc').textContent = activeRecipe.text;
+        }
+
+        function triggerRecipeChaosEvent() {
+            document.getElementById('surge-alert').style.display = 'block';
+            activeRecipe = recipesPool[Math.floor(Math.random() * recipesPool.length)];
+            updateRecipeVisuals();
+            setTimeout(() => { document.getElementById('surge-alert').style.display = 'none'; }, 4000);
+        }
+
+        function evaluateMatchResolutions() {
+            document.getElementById('prog-lbl').textContent = `${scores.built}/5 Built`;
+            document.getElementById('instab-lbl').textContent = `${scores.instability}%`;
+            document.getElementById('fluid-base').style.height = `${40 + (scores.instability * 0.5)}%`;
+
+            if(scores.built >= 5) {
+                alert("🧪 VICTORY: Chemists successfully synthesized the serum!");
+                location.reload();
+            } else if(scores.instability >= 100) {
+                alert("💥 KABOOM: Beaker exploded! Saboteurs win!");
+                location.reload();
+            }
+        }
+
+        function logFeedEvent(txt) {
+            const log = document.getElementById('lab-log');
+            log.innerHTML += `<div>&gt; ${txt}</div>`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        // STUDENT USER LOGIC
+        function connectToLabServer() {
+            const name = document.getElementById('player-name').value.trim() || "Lab Assistant";
+            const code = document.getElementById('room-code').value.trim();
+            if(!code) return alert("Please enter the 4-digit lab code!");
+
+            showScreen('client-screen');
+            peer = new Peer();
+            peer.on('open', () => {
+                serverConn = peer.connect(`lab-${code}`);
+                serverConn.on('open', () => {
+                    serverConn.send({ type: 'JOIN', name: name });
+                });
+
+                serverConn.on('data', (data) => {
+                    if(data.type === 'ASSIGN_ROLE') {
+                        const banner = document.getElementById('role-tag');
+                        if(data.role === 'SABOTEUR') {
+                            banner.textContent = "🤫 SECRET IDENTITY: SABOTEUR 🧪";
+                            banner.style.background = "var(--danger)";
+                        } else {
+                            banner.textContent = "🔬 ASSIGNED ROLE: CERTIFIED CHEMIST";
+                            banner.style.background = "var(--success)";
+                        }
+                        banner.style.color = "white";
+                    }
+                });
             });
+        }
+
+        function submitElementAtom(symbol) {
+            if(serverConn && serverConn.open) {
+                serverConn.send({ type: 'ELEMENT', atom: symbol });
+            }
         }
     </script>
 </body>
