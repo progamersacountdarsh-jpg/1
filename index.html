@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kids Multiplayer Quiz Battle</title>
+    <title>Kids Rapid Multiplayer Quiz</title>
+    <!-- PeerJS for seamless direct device-to-device connection -->
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         :root {
@@ -228,6 +229,7 @@
 <body>
 
     <div class="container">
+        <!-- SCREEN 1: Setup & Connection Menu -->
         <div id="setup-screen" class="screen active">
             <h1>🎒 Kid's Quiz Arena ✏️</h1>
             <div class="input-group">
@@ -237,10 +239,12 @@
             
             <hr style="opacity: 0.1; margin: 25px 0;">
 
+            <!-- Host Option -->
             <button onclick="initiateHost()">Option A: Create a New Room</button>
             
             <div class="divider">OR</div>
             
+            <!-- Join Option -->
             <div class="input-group">
                 <label for="join-room-id">Enter Friend's Room Code:</label>
                 <input type="text" id="join-room-id" placeholder="e.g., quiz-1234">
@@ -248,6 +252,7 @@
             <button style="background: #a29bfe; color: #1e1b4b; box-shadow: 0 4px 0 #6c5ce7;" onclick="connectToHost()">Option B: Join Friend's Room</button>
         </div>
 
+        <!-- SCREEN 2: Waiting Lobby -->
         <div id="waiting-screen" class="screen">
             <h2>Lobby Status</h2>
             <div id="room-info-display" class="room-display" style="display:none;">
@@ -257,6 +262,7 @@
             <div class="waiting-msg" id="waiting-status">Setting up network connection...</div>
         </div>
 
+        <!-- SCREEN 3: Live Gameplay -->
         <div id="quiz-screen" class="screen">
             <div class="live-scoreboard">
                 <div class="score-box">
@@ -269,6 +275,7 @@
                 </div>
             </div>
 
+            <!-- 10 Sec Individual Timer Bar -->
             <div class="timer-container">
                 <div id="timer" class="timer-bar"></div>
             </div>
@@ -278,9 +285,10 @@
             <div class="waiting-msg" id="status-message"></div>
         </div>
 
+        <!-- SCREEN 4: Match Report Summary -->
         <div id="results-screen" class="screen">
             <h1>✨ Match Results ✨</h1>
-            <h2 id="winner-text" style="color: #55efc4; font-size: 32px; text-align: center; margin: 25px 0;"></h2>
+            <h2 id="winner-text" style="color: #55efc4; font-size: 32px; text-align: center; margin: 25px 0; white-space: pre-wrap;"></h2>
             <button onclick="location.reload()" style="background: #55efc4; box-shadow: 0 4px 0 #00b894;">Play Again</button>
         </div>
     </div>
@@ -305,10 +313,10 @@
         let myScore = 0;
         let oppScore = 0;
         
-        let timeLeft = 15; // Changed timer configuration from 20s to 15s
+        let timeLeft = 10; // Updated to 10 seconds
         let timerInterval;
-        let answeredCurrentQuestion = false;
-        let opponentFinishedQuestion = false;
+        let myFinished = false;
+        let oppFinished = false;
 
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -388,10 +396,9 @@
                 } else if (data.type === 'SCORE_UPDATE') {
                     oppScore = data.score;
                     document.getElementById('opp-live-score').textContent = oppScore;
-                    if (data.questionIndex === currentQuestionIndex) {
-                        opponentFinishedQuestion = true;
-                        checkAdvanceCondition();
-                    }
+                } else if (data.type === 'FINISHED') {
+                    oppFinished = true;
+                    checkMatchEnd();
                 }
             });
 
@@ -409,9 +416,7 @@
         }
 
         function loadQuestion() {
-            answeredCurrentQuestion = false;
-            opponentFinishedQuestion = false;
-            timeLeft = 15; // Set clock value back to full 15s bar
+            timeLeft = 10; // Set clock back to full 10s bar
             document.getElementById('status-message').textContent = "";
             
             const currentQ = quizData[currentQuestionIndex];
@@ -439,22 +444,18 @@
                 updateTimerBar();
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
-                    submitAnswer(-1); // Automatically trigger time out limit response
+                    submitAnswer(-1); // Automatically time out
                 }
             }, 1000);
         }
 
         function updateTimerBar() {
-            const percentage = (timeLeft / 15) * 100; // Recalculated out of 15 seconds
+            const percentage = (timeLeft / 10) * 100; // Recalculated out of 10 seconds
             document.getElementById('timer').style.width = `${percentage}%`;
         }
 
         function submitAnswer(selectedIndex) {
             clearInterval(timerInterval);
-            answeredCurrentQuestion = true;
-
-            // Gray out options so they can't double click
-            document.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
 
             const currentQ = quizData[currentQuestionIndex];
             if (selectedIndex === currentQ.correct) {
@@ -462,42 +463,44 @@
                 document.getElementById('my-live-score').textContent = myScore;
             }
 
-            // Broadcast scores immediately down the data pipeline stream
+            // Send score to opponent right away
             connection.send({
                 type: 'SCORE_UPDATE',
-                score: myScore,
-                questionIndex: currentQuestionIndex
+                score: myScore
             });
 
-            document.getElementById('status-message').textContent = `Waiting for ${opponentName} to answer...`;
-            checkAdvanceCondition();
-        }
-
-        function checkAdvanceCondition() {
-            // Wait until both kids answer before jumping forward to the next level question
-            if (answeredCurrentQuestion && opponentFinishedQuestion) {
-                currentQuestionIndex++;
-                setTimeout(() => {
-                    if (currentQuestionIndex < quizData.length) {
-                        loadQuestion();
-                    } else {
-                        endGame();
-                    }
-                }, 1200); 
-            }
-        }
-
-        function endGame() {
-            showScreen('results-screen');
-            let resultText = "";
-            if (myScore > oppScore) {
-                resultText = `👑 You won!\n🥇 ${myScore} pts to ${oppScore} pts`;
-            } else if (oppScore > myScore) {
-                resultText = `🎉 ${opponentName} wins!\n🥈 ${myScore} pts to ${oppScore} pts`;
+            // Move straight to the next question without waiting!
+            currentQuestionIndex++;
+            if (currentQuestionIndex < quizData.length) {
+                loadQuestion();
             } else {
-                resultText = `🤝 It's a Tie!\nScore: ${myScore} - ${oppScore}`;
+                myFinished = true;
+                connection.send({ type: 'FINISHED' });
+                
+                // Clear out UI elements
+                document.getElementById('question-text').textContent = "You finished all questions!";
+                document.getElementById('options-container').innerHTML = "";
+                document.getElementById('timer').style.width = "0%";
+                document.getElementById('status-message').textContent = `Waiting for ${opponentName} to cross the finish line...`;
+                
+                checkMatchEnd();
             }
-            document.getElementById('winner-text').innerText = resultText;
+        }
+
+        function checkMatchEnd() {
+            // End match only when both players have finished their respective question runs
+            if (myFinished && oppFinished) {
+                showScreen('results-screen');
+                let resultText = "";
+                if (myScore > oppScore) {
+                    resultText = `👑 You won!\n🥇 ${myScore} pts to ${oppScore} pts`;
+                } else if (oppScore > myScore) {
+                    resultText = `🎉 ${opponentName} wins!\n🥈 ${myScore} pts to ${oppScore} pts`;
+                } else {
+                    resultText = `🤝 It's a Tie!\nScore: ${myScore} - ${oppScore}`;
+                }
+                document.getElementById('winner-text').innerText = resultText;
+            }
         }
     </script>
 </body>
