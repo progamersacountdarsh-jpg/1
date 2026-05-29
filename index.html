@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Class 6 Endless Dynamic Quiz</title>
+    <title>Class 6 Fast-Paced Dynamic Quiz</title>
     <!-- PeerJS for seamless direct device-to-device connection -->
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
@@ -15,6 +15,7 @@
             --text: #ffffff;
             --success: #55efc4;
             --error: #ff7675;
+            --warning: #fdcb6e;
         }
 
         * {
@@ -42,6 +43,8 @@
             padding: 30px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             border: 2px solid rgba(255,255,255,0.1);
+            position: relative;
+            overflow: hidden;
         }
 
         .screen {
@@ -133,7 +136,7 @@
             margin-top: 5px;
         }
 
-        /* Live Scoreboard Header */
+        /* Live Scoreboards */
         .live-scoreboard {
             display: flex;
             justify-content: space-between;
@@ -159,6 +162,26 @@
             color: #55efc4;
         }
 
+        /* Difficulty Flasher Overlay Alert Banner */
+        .difficulty-banner {
+            display: none;
+            background: linear-gradient(90deg, #d63031, #e17055);
+            color: white;
+            text-align: center;
+            padding: 12px;
+            font-weight: bold;
+            font-size: 18px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            animation: pulse 0.6s infinite alternate;
+            border: 2px solid #ffeaa7;
+        }
+
+        @keyframes pulse {
+            from { transform: scale(0.98); opacity: 0.9; }
+            to { transform: scale(1.02); opacity: 1; }
+        }
+
         /* Timer components */
         .timer-container {
             width: 100%;
@@ -177,7 +200,7 @@
             transition: width 1s linear;
         }
 
-        /* Quiz UI */
+        /* Quiz Main Display Items */
         .question-text {
             font-size: 24px;
             margin-bottom: 25px;
@@ -211,27 +234,25 @@
             filter: brightness(1.1);
         }
 
-        .option-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            box-shadow: none;
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            margin-top: 5px;
+            background: rgba(255,255,255,0.1);
         }
-
-        .waiting-msg {
-            text-align: center;
-            font-style: italic;
-            color: #ffeaa7;
-            margin-top: 15px;
-            font-size: 16px;
-        }
-    </style>
+    </script>
 </head>
 <body>
 
     <div class="container">
+        <!-- DIFFICULTY WARNING BANNER -->
+        <div id="difficulty-alert" class="difficulty-banner">⚠️ WARNING: DIFFICULTY LEVEL RISING! ⚠️</div>
+
         <!-- SCREEN 1: Setup & Connection Menu -->
         <div id="setup-screen" class="screen active">
-            <h1>🎒 Class 6 Endless Quiz Arena ✏️</h1>
+            <h1>🎒 Class 6 Adaptive Arena ✏️</h1>
             <div class="input-group">
                 <label for="username">Your Nickname:</label>
                 <input type="text" id="username" placeholder="Type your name here...">
@@ -239,12 +260,9 @@
             
             <hr style="opacity: 0.1; margin: 25px 0;">
 
-            <!-- Host Option -->
             <button onclick="initiateHost()">Option A: Create a New Room</button>
-            
             <div class="divider">OR</div>
             
-            <!-- Join Option -->
             <div class="input-group">
                 <label for="join-room-id">Enter Friend's Room Code:</label>
                 <input type="text" id="join-room-id" placeholder="e.g., quiz-1234">
@@ -259,7 +277,7 @@
                 Tell your friend to enter this code:<br>
                 <span id="generated-code" class="room-code-highlight">---</span>
             </div>
-            <div class="waiting-msg" id="waiting-status">Setting up network connection...</div>
+            <div style="text-align: center; font-style: italic; color: #ffeaa7;">Setting up network connection...</div>
         </div>
 
         <!-- SCREEN 3: Live Gameplay -->
@@ -268,28 +286,40 @@
                 <div class="score-box">
                     <div id="my-name-label" style="font-weight: bold;">You</div>
                     <div class="score-val" id="my-live-score">0</div>
+                    <div id="my-status-tag" class="status-badge" style="color: #55efc4;">Playing</div>
                 </div>
                 <div class="score-box">
                     <div id="opp-name-label" style="font-weight: bold;">Opponent</div>
                     <div class="score-val" id="opp-live-score">0</div>
+                    <div id="opp-status-tag" class="status-badge" style="color: #74b9ff;">Playing</div>
                 </div>
             </div>
 
-            <!-- 10 Sec Individual Timer Bar -->
             <div class="timer-container">
                 <div id="timer" class="timer-bar"></div>
             </div>
 
             <div class="question-text" id="question-text">Generating fresh question...</div>
             <div class="options-grid" id="options-container"></div>
-            <div class="waiting-msg" id="status-message"></div>
         </div>
 
-        <!-- SCREEN 4: Match Report Summary -->
+        <!-- SCREEN 4: Immediate Interactive Live Results -->
         <div id="results-screen" class="screen">
-            <h1>✨ Match Results ✨</h1>
-            <h2 id="winner-text" style="color: #55efc4; font-size: 32px; text-align: center; margin: 25px 0; white-space: pre-wrap;"></h2>
-            <button onclick="location.reload()" style="background: #55efc4; box-shadow: 0 4px 0 #00b894;">Play Again</button>
+            <h1>✨ Live Score Report ✨</h1>
+            <div class="live-scoreboard" style="background: rgba(255,255,255,0.05); margin: 25px 0;">
+                <div class="score-box">
+                    <div id="res-my-name" style="font-weight: bold; font-size: 20px;">You</div>
+                    <div class="score-val" id="res-my-score" style="font-size: 42px;">0</div>
+                    <div id="res-my-tag" style="color: #55efc4; margin-top: 5px; font-weight: bold;">Finished</div>
+                </div>
+                <div class="score-box">
+                    <div id="res-opp-name" style="font-weight: bold; font-size: 20px;">Opponent</div>
+                    <div class="score-val" id="res-opp-score" style="font-size: 42px;">0</div>
+                    <div id="res-opp-tag" style="color: #fdcb6e; margin-top: 5px; font-weight: bold;">Still Racing...</div>
+                </div>
+            </div>
+            <h2 id="winner-live-text" style="color: #ffeaa7; font-size: 26px; text-align: center; min-height: 40px; white-space: pre-wrap;"></h2>
+            <button onclick="location.reload()" style="background: #55efc4; box-shadow: 0 4px 0 #00b894; margin-top: 20px;">Back to Main Menu</button>
         </div>
     </div>
 
@@ -300,7 +330,7 @@
         let opponentName = "Opponent";
         
         let currentQuestionIndex = 0;
-        const totalQuestionsPerMatch = 10; // Change this number to make games longer or shorter!
+        const totalQuestionsPerMatch = 10; 
         
         let myScore = 0;
         let oppScore = 0;
@@ -311,12 +341,32 @@
         let oppFinished = false;
         let currentQuestion = null;
 
+        let sessionQuestionSequence = [];
+
+        function buildUniqueMatchSequence() {
+            // Expanded categoric lists to prevent any back-to-back duplicate templates
+            const basicCategories = [
+                'math_perimeter', 'math_prime', 'math_fraction', 'math_ratio', 
+                'science_water', 'science_materials', 'science_magnets', 
+                'geo_planets', 'geo_lines', 'geo_rotation'
+            ];
+            let pool = [];
+            while(pool.length < totalQuestionsPerMatch) {
+                let batch = [...basicCategories].sort(() => Math.random() - 0.5);
+                pool = pool.concat(batch);
+            }
+            sessionQuestionSequence = pool.slice(0, totalQuestionsPerMatch);
+        }
+
         // ==========================================
-        // ALGORITHMIC QUESTION ENGINE (CLASS 6)
+        // ADAPTIVE HARDNESS ESCALATION ENGINE
         // ==========================================
-        function generateDynamicQuestion() {
-            const types = ['math_perimeter', 'math_prime', 'math_fraction', 'science_water', 'science_materials', 'geo_planets', 'geo_lines'];
-            const chosenType = types[Math.floor(Math.random() * types.length)];
+        function generateDynamicQuestion(index) {
+            const chosenType = sessionQuestionSequence[index];
+            
+            // Difficulty tier tracking based on every 2 questions answered 
+            // Questions 1-2: Easy (Tier 1), 3-4: Medium (Tier 2), 5-6: Hard (Tier 3), 7+: Expert (Tier 4)
+            const difficultyTier = Math.floor(index / 2) + 1; 
 
             let q = "";
             let options = [];
@@ -324,7 +374,10 @@
 
             switch(chosenType) {
                 case 'math_perimeter': {
-                    const side = Math.floor(Math.random() * 12) + 3; // side between 3 and 14
+                    // Scales dimensions higher as hardness advances
+                    const baseMultiplier = difficultyTier * 8; 
+                    const side = Math.floor(Math.random() * 12) + baseMultiplier;
+                    
                     const shapes = [
                         { name: "square", mult: 4 },
                         { name: "regular triangle", mult: 3 },
@@ -334,76 +387,119 @@
                     const targetShape = shapes[Math.floor(Math.random() * shapes.length)];
                     const ans = side * targetShape.mult;
 
-                    q = `What is the perimeter of a ${targetShape.name} if each side measures exactly ${side} cm?`;
-                    options = [`${ans - 2} cm`, `${ans} cm`, `${ans + targetShape.mult} cm`].sort(() => Math.random() - 0.5);
+                    q = `[Tier ${difficultyTier}] Find the perimeter of a ${targetShape.name} if each side measures exactly ${side} cm.`;
+                    options = [`${ans - targetShape.mult} cm`, `${ans} cm`, `${ans + side} cm`].sort(() => Math.random() - 0.5);
                     correct = options.indexOf(`${ans} cm`);
                     break;
                 }
                 case 'math_prime': {
-                    const primes = [2, 3, 5, 7, 11, 13, 17, 19, 23];
-                    const targetPrime = primes[Math.floor(Math.random() * primes.length)];
-                    q = `Which of the following numbers is a Prime Number?`;
-                    options = [targetPrime, targetPrime + 1, targetPrime * 2].sort(() => Math.random() - 0.5);
+                    let primesPool = [];
+                    if (difficultyTier <= 2) {
+                        primesPool = [2, 3, 5, 7, 11, 13, 17, 19];
+                    } else {
+                        primesPool = [43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97];
+                    }
+                    const targetPrime = primesPool[Math.floor(Math.random() * primesPool.length)];
+                    q = `[Tier ${difficultyTier}] Identify the hidden Prime Number among the choices below:`;
+                    options = [targetPrime, targetPrime + 1, targetPrime - 1].sort(() => Math.random() - 0.5);
+                    // Ensure edge cases where targetPrime +/- 1 might produce another prime are averted
+                    options = [...new Set(options)];
+                    while(options.length < 3) { options.push(targetPrime + 4); }
                     correct = options.indexOf(targetPrime);
                     break;
                 }
                 case 'math_fraction': {
-                    const num = Math.floor(Math.random() * 10) + 6;
-                    const den = Math.floor(Math.random() * 5) + 2;
-                    // Ensure numerator is always larger to make it improper
-                    const actualNum = num > den ? num : num + den; 
-                    q = `A fraction like ${actualNum}/${den}, where the numerator is greater than the denominator, is called an...`;
-                    options = ["Proper Fraction", "Improper Fraction", "Mixed Fraction"];
-                    correct = 1;
+                    if (difficultyTier <= 2) {
+                        q = `[Tier ${difficultyTier}] A fraction where the top numerator is greater than the bottom denominator is known as an...`;
+                        options = ["Proper Fraction", "Improper Fraction", "Mixed Fraction"];
+                        correct = 1;
+                    } else {
+                        // Hard Tier Decimal Fraction Conversion
+                        q = `[Tier ${difficultyTier}] Convert the fraction 3/5 into its exact matching decimal values:`;
+                        options = ["0.35", "0.6", "0.06", "3.5"].sort(() => Math.random() - 0.5);
+                        correct = options.indexOf("0.6");
+                    }
+                    break;
+                }
+                case 'math_ratio': {
+                    const multi = difficultyTier * 3;
+                    const boys = 4 * multi; 
+                    const girls = 3 * multi; 
+                    q = `[Tier ${difficultyTier}] A Class 6 study team has ${boys} boys and ${girls} girls. What is the ratio of boys to girls in simplest form?`;
+                    options = ["4:3", "3:4", `${boys}:${girls}`].sort(() => Math.random() - 0.5);
+                    correct = options.indexOf("4:3");
                     break;
                 }
                 case 'science_water': {
-                    const scenarios = [
-                        { q: "Water puddles drying up on a sidewalk under the bright midday sun", ans: "Evaporation" },
-                        { q: "Tiny droplets forming on the clean outside of a cold soda can", ans: "Condensation" },
-                        { q: "Clouds releasing water drops back down onto the forests and fields", ans: "Precipitation" }
-                    ];
-                    const selected = scenarios[Math.floor(Math.random() * scenarios.length)];
-                    q = `Which process of the Earth's natural water cycle explains this: "${selected.q}"?`;
-                    options = ["Evaporation", "Condensation", "Precipitation"].sort(() => Math.random() - 0.5);
-                    correct = options.indexOf(selected.ans);
+                    if (difficultyTier <= 2) {
+                        q = `[Tier ${difficultyTier}] What is the primary process called when water changes into gas vapor?`;
+                        options = ["Evaporation", "Condensation", "Precipitation"];
+                        correct = 0;
+                    } else {
+                        q = `[Tier ${difficultyTier}] Plants transpire excess water vapor into the atmosphere via tiny leaf microscopic openings called...`;
+                        options = ["Stomata", "Chlorophyll", "Root Hairs", "Xylem"].sort(() => Math.random() - 0.5);
+                        correct = options.indexOf("Stomata");
+                    }
                     break;
                 }
                 case 'science_materials': {
-                    const items = [
-                        { name: "Clear glass pane", type: "Transparent" },
-                        { name: "Thick wooden heavy board", type: "Opaque" },
-                        { name: "Oiled or frosted tracing paper", type: "Translucent" },
-                        { name: "Clean clear drinking water", type: "Transparent" },
-                        { name: "Solid iron steel plate", type: "Opaque" }
-                    ];
-                    const picked = items[Math.floor(Math.random() * items.length)];
-                    q = `How would you classify this material based on Class 6 Science: "${picked.name}"?`;
-                    options = ["Transparent", "Opaque", "Translucent"].sort(() => Math.random() - 0.5);
-                    correct = options.indexOf(picked.type);
+                    if (difficultyTier <= 2) {
+                        q = `[Tier ${difficultyTier}] Materials that completely block light transmissions are classified as:`;
+                        options = ["Transparent", "Opaque", "Translucent"];
+                        correct = 1;
+                    } else {
+                        q = `[Tier ${difficultyTier}] Which type of component change happens when paper burns into completely fresh ash?`;
+                        options = ["Physical Change", "Chemical Change", "Reversible Change"].sort(() => Math.random() - 0.5);
+                        correct = options.indexOf("Chemical Change");
+                    }
+                    break;
+                }
+                case 'science_magnets': {
+                    if (difficultyTier <= 2) {
+                        q = `[Tier ${difficultyTier}] Like poles of two separate magnets will always...`;
+                        options = ["Repel each other", "Attract each other", "Rotate endlessly"];
+                        correct = 0;
+                    } else {
+                        q = `[Tier ${difficultyTier}] Which of the following elements is highly magnetic and easily attracted to a permanent magnet bar?`;
+                        options = ["Copper", "Aluminum", "Iron", "Gold"].sort(() => Math.random() - 0.5);
+                        correct = options.indexOf("Iron");
+                    }
                     break;
                 }
                 case 'geo_planets': {
-                    const facts = [
-                        { q: "Which planet is positioned closest to the burning Sun?", ans: "Mercury" },
-                        { q: "Which planet is famous for being known as our Red Planet?", ans: "Mars" },
-                        { q: "Which gas giant is recognized as the largest planet in our solar system?", ans: "Jupiter" }
-                    ];
-                    const fact = facts[Math.floor(Math.random() * facts.length)];
-                    q = fact.q;
-                    options = ["Mercury", "Venus", "Mars", "Jupiter"].sort(() => Math.random() - 0.5);
-                    correct = options.indexOf(fact.ans);
+                    if (difficultyTier <= 2) {
+                        q = `[Tier ${difficultyTier}] Which inner rocky world is commonly called the Red Planet?`;
+                        options = ["Venus", "Mars", "Mercury"];
+                        correct = 1;
+                    } else {
+                        q = `[Tier ${difficultyTier}] Which outer planet has the most extensive, bright ice ring system visible from space?`;
+                        options = ["Jupiter", "Saturn", "Neptune", "Uranus"].sort(() => Math.random() - 0.5);
+                        correct = options.indexOf("Saturn");
+                    }
                     break;
                 }
                 case 'geo_lines': {
-                    const lines = [
-                        { name: "Equator", desc: "divides our planet into the Northern and Southern Hemispheres" },
-                        { name: "Prime Meridian", desc: "divides our planet into Eastern and Western Hemispheres" }
-                    ];
-                    const targetLine = lines[Math.floor(Math.random() * lines.length)];
-                    q = `Which fundamental imaginary line on Earth ${targetLine.desc}?`;
-                    options = ["The Equator", "The Prime Meridian", "Tropic of Cancer"].sort(() => Math.random() - 0.5);
-                    correct = options.indexOf(targetLine.name === "Equator" ? "The Equator" : "The Prime Meridian");
+                    if (difficultyTier <= 2) {
+                        q = `[Tier ${difficultyTier}] Name the primary 0° reference line running horizontally around the middle of Earth:`;
+                        options = ["The Equator", "The Prime Meridian", "Tropic of Capricorn"];
+                        correct = 0;
+                    } else {
+                        q = `[Tier ${difficultyTier}] What specific latitude angle location defines the Tropic of Cancer in the northern hemisphere?`;
+                        options = ["23.5° North", "23.5° South", "66.5° North", "0°"].sort(() => Math.random() - 0.5);
+                        correct = options.indexOf("23.5° North");
+                    }
+                    break;
+                }
+                case 'geo_rotation': {
+                    if (difficultyTier <= 2) {
+                        q = `[Tier ${difficultyTier}] The daily rotational spinning loop of the planet on its axis directly creates:`;
+                        options = ["The 4 Seasons", "Day and Night", "Ocean tides"];
+                        correct = 1;
+                    } else {
+                        q = `[Tier ${difficultyTier}] The precise complete period required for Earth to finish one full orbital revolution around the Sun is:`;
+                        options = ["24 Hours", "30 Days", "365.25 Days", "28 Days"].sort(() => Math.random() - 0.5);
+                        correct = options.indexOf("365.25 Days");
+                    }
                     break;
                 }
             }
@@ -417,38 +513,26 @@
         }
 
         // ==========================================
-        // HOST ROOM
+        // PEER CONNECTION MANAGEMENTS
         // ==========================================
         function initiateHost() {
             myName = document.getElementById('username').value.trim() || "Host Player";
             showScreen('waiting-screen');
-            document.getElementById('waiting-status').textContent = "Creating code...";
 
             const randomCode = Math.floor(1000 + Math.random() * 9000);
             const hostRoomId = `quiz-${randomCode}`;
 
             peer = new Peer(hostRoomId);
-
             peer.on('open', (id) => {
                 document.getElementById('room-info-display').style.display = 'block';
                 document.getElementById('generated-code').textContent = id;
-                document.getElementById('waiting-status').textContent = "Waiting for your friend to join...";
             });
-
             peer.on('connection', (conn) => {
                 connection = conn;
-                setupConnectionDataListeners();
-            });
-
-            peer.on('error', (err) => {
-                alert("Error: Room creation failed! Try clicking the host button again.");
-                location.reload();
+                setupConnectionListeners();
             });
         }
 
-        // ==========================================
-        // JOIN ROOM
-        // ==========================================
         function connectToHost() {
             myName = document.getElementById('username').value.trim() || "Guest Player";
             const targetRoomId = document.getElementById('join-room-id').value.trim();
@@ -459,26 +543,20 @@
             }
 
             showScreen('waiting-screen');
-            document.getElementById('waiting-status').textContent = "Connecting to your friend's room...";
-
             peer = new Peer(); 
-
             peer.on('open', () => {
                 connection = peer.connect(targetRoomId);
-                setupConnectionDataListeners();
+                setupConnectionListeners();
             });
-
-            peer.on('error', (err) => {
-                alert("Could not find that room code. Check the numbers and try again!");
+            peer.on('error', () => {
+                alert("Room not found! Check numbers and try again.");
                 location.reload();
             });
         }
 
-        // ==========================================
-        // REALTIME SYNC LOGIC
-        // ==========================================
-        function setupConnectionDataListeners() {
+        function setupConnectionListeners() {
             connection.on('open', () => {
+                buildUniqueMatchSequence();
                 connection.send({ type: 'HANDSHAKE', name: myName });
             });
 
@@ -489,33 +567,45 @@
                 } else if (data.type === 'SCORE_UPDATE') {
                     oppScore = data.score;
                     document.getElementById('opp-live-score').textContent = oppScore;
-                } else if (data.type === 'FINISHED') {
-                    oppFinished = true;
-                    checkMatchEnd();
+                    document.getElementById('res-opp-score').textContent = oppScore;
+                    if (data.finished) {
+                        oppFinished = true;
+                        document.getElementById('opp-status-tag').textContent = "Finished";
+                        document.getElementById('opp-status-tag').style.color = "#ff7675";
+                        document.getElementById('res-opp-tag').textContent = "Finished";
+                        document.getElementById('res-opp-tag').style.color = "#55efc4";
+                    }
+                    updateWinnerDisplayText();
+                } else if (data.type === 'DIFFICULTY_UP') {
+                    triggerDifficultyBannerFlash();
                 }
-            });
-
-            connection.on('close', () => {
-                alert("Your friend left the game.");
-                location.reload();
             });
         }
 
         function startGameUi() {
             document.getElementById('my-name-label').textContent = myName;
+            document.getElementById('res-my-name').textContent = myName;
             document.getElementById('opp-name-label').textContent = opponentName;
+            document.getElementById('res-opp-name').textContent = opponentName;
             showScreen('quiz-screen');
             loadQuestion();
         }
 
+        // ==========================================
+        // CORE GAMEPLAY PROCESSING FUNCTIONS
+        // ==========================================
         function loadQuestion() {
+            // Check if difficulty alert banner should trigger (every 2 questions)
+            if (currentQuestionIndex > 0 && currentQuestionIndex % 2 === 0) {
+                triggerDifficultyBannerFlash();
+                // Send an immediate sync alert to flashing peer's UI too
+                connection.send({ type: 'DIFFICULTY_UP' });
+            }
+
             timeLeft = 10; 
-            document.getElementById('status-message').textContent = "";
+            currentQuestion = generateDynamicQuestion(currentQuestionIndex);
             
-            // Generate a fresh, entirely unscripted random question structure
-            currentQuestion = generateDynamicQuestion();
-            
-            document.getElementById('question-text').textContent = `Q${currentQuestionIndex + 1}: ${currentQuestion.q}`;
+            document.getElementById('question-text').textContent = `Q${currentQuestionIndex + 1}/${totalQuestionsPerMatch}: ${currentQuestion.q}`;
 
             const container = document.getElementById('options-container');
             container.innerHTML = "";
@@ -529,6 +619,14 @@
             });
 
             startTimer();
+        }
+
+        function triggerDifficultyBannerFlash() {
+            const banner = document.getElementById('difficulty-alert');
+            banner.style.display = 'block';
+            setTimeout(() => {
+                banner.style.display = 'none';
+            }, 3000); // Flashes notices for 3 structural seconds then hides gracefully
         }
 
         function startTimer() {
@@ -555,42 +653,46 @@
             if (selectedIndex === currentQuestion.correct) {
                 myScore += 10;
                 document.getElementById('my-live-score').textContent = myScore;
+                document.getElementById('res-my-score').textContent = myScore;
             }
 
-            // Sync score instantly to peer device
+            currentQuestionIndex++;
+            myFinished = (currentQuestionIndex >= totalQuestionsPerMatch);
+
+            // Sync structural parameters instantly to peer device
             connection.send({
                 type: 'SCORE_UPDATE',
-                score: myScore
+                score: myScore,
+                finished: myFinished
             });
 
-            currentQuestionIndex++;
-            if (currentQuestionIndex < totalQuestionsPerMatch) {
+            if (!myFinished) {
                 loadQuestion();
             } else {
-                myFinished = true;
-                connection.send({ type: 'FINISHED' });
-                
-                document.getElementById('question-text').textContent = "You finished all your questions!";
-                document.getElementById('options-container').innerHTML = "";
-                document.getElementById('timer').style.width = "0%";
-                document.getElementById('status-message').textContent = `Waiting for ${opponentName} to cross the finish line...`;
-                
-                checkMatchEnd();
+                // NO MORE WAITING! Instantly jump to the Interactive Live Result Screen
+                document.getElementById('my-status-tag').textContent = "Finished";
+                showScreen('results-screen');
+                updateWinnerDisplayText();
             }
         }
 
-        function checkMatchEnd() {
+        function updateWinnerDisplayText() {
+            const winLabel = document.getElementById('winner-live-text');
+            
             if (myFinished && oppFinished) {
-                showScreen('results-screen');
-                let resultText = "";
                 if (myScore > oppScore) {
-                    resultText = `👑 You won!\n🥇 ${myScore} pts to ${oppScore} pts`;
+                    winLabel.innerText = `👑 Match Over: You Won!\n🥇 final score: ${myScore} to ${oppScore}`;
+                    winLabel.style.color = "#55efc4";
                 } else if (oppScore > myScore) {
-                    resultText = `🎉 ${opponentName} wins!\n🥈 ${myScore} pts to ${oppScore} pts`;
+                    winLabel.innerText = `🎉 Match Over: ${opponentName} Wins!\n🥈 final score: ${oppScore} to ${myScore}`;
+                    winLabel.style.color = "#ff7675";
                 } else {
-                    resultText = `🤝 It's a Tie!\nScore: ${myScore} - ${oppScore}`;
+                    winLabel.innerText = `🤝 Match Over: It's a Tie!\nScore: ${myScore} - ${oppScore}`;
+                    winLabel.style.color = "#ffeaa7";
                 }
-                document.getElementById('winner-text').innerText = resultText;
+            } else if (myFinished && !oppFinished) {
+                winLabel.innerText = `You finished! Current Standings:\nYou: ${myScore} pts | ${opponentName}: ${oppScore} pts\n(Keep tracking, your friend is still solving...)`;
+                winLabel.style.color = "#fdcb6e";
             }
         }
     </script>
