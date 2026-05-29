@@ -3,223 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cartify Replica</title>
+    <title>Cartify Replica with Login</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2 family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         /* --- Reset & Global Styles --- */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
-
-        body {
-            background-color: #f1f2f6;
-            color: #212121;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: #f1f2f6; color: #212121; position: relative; min-height: 100vh; }
 
         /* --- Top Navigation Bar --- */
         .top-navbar {
-            background-color: #ffffff;
-            padding: 12px 5%;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 1px 1px 0 rgba(0,0,0,.16);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            background-color: #ffffff; padding: 12px 5%; display: flex; align-items: center;
+            justify-content: space-between; box-shadow: 0 1px 1px 0 rgba(0,0,0,.16);
+            position: sticky; top: 0; z-index: 100;
         }
-
-        /* Left Section: Logo & Travel toggle */
-        .nav-left {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
+        .nav-left { display: flex; align-items: center; gap: 15px; }
         .brand-logo {
-            background-color: #ff9900; /* Orange background update */
-            padding: 8px 24px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 700;
-            font-style: italic;
-            color: #ffffff; /* White text for contrast */
-            font-size: 18px;
-            text-decoration: none;
+            background-color: #ff9900; padding: 8px 24px; border-radius: 8px; display: flex;
+            align-items: center; gap: 8px; font-weight: 700; font-style: italic; color: #ffffff;
+            font-size: 18px; text-decoration: none;
         }
-
-        .brand-logo i {
-            color: #ffffff; /* White bolt icon */
-        }
-
+        .brand-logo i { color: #ffffff; }
         .travel-tab {
-            background-color: #f0f2f5;
-            padding: 8px 20px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 500;
-            color: #212121;
-            text-decoration: none;
-            font-size: 14px;
+            background-color: #f0f2f5; padding: 8px 20px; border-radius: 8px; display: flex;
+            align-items: center; gap: 8px; font-weight: 500; color: #212121; text-decoration: none; font-size: 14px;
         }
-
-        .travel-tab i {
-            color: #ff6f61;
-        }
-
-        /* Center Section: Search Bar */
-        .search-container {
-            flex: 1;
-            max-width: 500px;
-            margin: 0 20px;
-            position: relative;
-        }
-
+        .travel-tab i { color: #ff6f61; }
+        .search-container { flex: 1; max-width: 500px; margin: 0 20px; position: relative; }
         .search-bar {
-            width: 100%;
-            padding: 11px 16px 11px 45px;
-            border: 1px solid #2874f0;
-            border-radius: 8px;
-            background-color: #f0f5ff;
-            font-size: 14px;
-            color: #212121;
-            outline: none;
+            width: 100%; padding: 11px 16px 11px 45px; border: 1px solid #2874f0;
+            border-radius: 8px; background-color: #f0f5ff; font-size: 14px; color: #212121; outline: none;
         }
+        .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #717478; font-size: 16px; }
 
-        .search-bar::placeholder {
-            color: #717478;
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #717478;
-            font-size: 16px;
-        }
-
-        /* Right Section: Actions & Utilities */
-        .nav-right {
-            display: flex;
-            align-items: center;
-            gap: 25px;
-            flex-shrink: 0;
-        }
-
-        .nav-location {
-            font-size: 12px;
-            color: #000;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .nav-location span {
-            color: #2874f0;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
+        .nav-right { display: flex; align-items: center; gap: 25px; flex-shrink: 0; }
+        .nav-location { font-size: 12px; color: #000; display: flex; align-items: center; gap: 4px; }
+        .nav-location span { color: #2874f0; font-weight: 600; cursor: pointer; }
+        
         .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            color: #212121;
-            text-decoration: none;
-            font-size: 15px;
-            font-weight: 500;
-            cursor: pointer;
-            padding: 6px 12px;
-            border-radius: 4px;
-            transition: background 0.2s;
+            display: flex; align-items: center; gap: 6px; color: #212121; text-decoration: none;
+            font-size: 15px; font-weight: 500; cursor: pointer; padding: 6px 12px; border-radius: 4px; transition: background 0.2s;
         }
-
-        .nav-item:hover {
-            background-color: #f0f5ff;
-        }
-
-        .nav-item i {
-            font-size: 16px;
-        }
+        .nav-item:hover { background-color: #f0f5ff; }
 
         /* --- Categories / Row Bar --- */
         .categories-bar {
-            background-color: #ffffff;
-            padding: 12px 4%;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end; /* Ensures items align beautifully at the baseline */
-            border-bottom: 1px solid #e0e0e0;
-            overflow-x: auto;
-            white-space: nowrap;
-            gap: 15px;
+            background-color: #ffffff; padding: 12px 4%; display: flex;
+            justify-content: space-between; align-items: flex-end; border-bottom: 1px solid #e0e0e0;
+            overflow-x: auto; white-space: nowrap; gap: 15px;
         }
-
-        /* Standardized Category Container */
         .category-item {
-            display: inline-flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-end;
-            gap: 8px;
-            text-decoration: none;
-            color: #212121;
-            font-size: 13px;
-            font-weight: 500;
-            min-width: 85px;
-            height: 60px; /* Forces equal spacing window */
-            text-align: center;
-            cursor: pointer;
-            flex-shrink: 0;
+            display: inline-flex; flex-direction: column; align-items: center; justify-content: flex-end;
+            gap: 8px; text-decoration: none; color: #212121; font-size: 13px; font-weight: 500;
+            min-width: 85px; height: 60px; text-align: center; cursor: pointer; flex-shrink: 0;
         }
-
-        /* Two-tone accent styling rules for the vector elements */
         .category-item i {
-            font-size: 22px;
-            color: #212121;
-            display: inline-block;
-            height: 24px;
+            font-size: 22px; color: #212121; display: inline-block; height: 24px;
             background: linear-gradient(180deg, #212121 65%, #ffe500 65%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
-
-        /* Specific active highlight modifications for 'For You' */
-        .category-item.active {
-            color: #2874f0;
-            font-weight: 600;
-            border-bottom: 3px solid #2874f0;
-        }
-
+        .category-item.active { color: #2874f0; font-weight: 600; border-bottom: 3px solid #2874f0; }
         .category-item.active i {
             background: linear-gradient(180deg, #2874f0 65%, #ffe500 65%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
 
-        /* Responsive adjustments for mobile viewports */
-        @media (max-width: 1024px) {
-            .top-navbar { padding: 12px 3%; }
-            .categories-bar { padding: 12px 2%; }
+        /* --- Login Modal Styles --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); display: flex; align-items: center;
+            justify-content: center; z-index: 1000; display: none; /* Hidden by default */
+        }
+        .login-box {
+            background-color: #ffffff; width: 650px; height: 450px;
+            border-radius: 4px; display: flex; overflow: hidden; position: relative;
+        }
+        .login-left {
+            background-color: #2874f0; width: 40%; padding: 40px 33px; color: #ffffff;
+            display: flex; flex-direction: column; justify-content: space-between;
+        }
+        .login-left h2 { font-size: 28px; font-weight: 500; }
+        .login-left p { font-size: 15px; color: #dbdbdb; margin-top: 15px; line-height: 1.4; }
+        .login-left img { width: 100%; opacity: 0.8; }
+        
+        .login-right { width: 60%; padding: 50px 35px 20px 35px; display: flex; flex-direction: column; }
+        .input-group { position: relative; margin-bottom: 30px; }
+        .input-group input {
+            width: 100%; padding: 10px 0; border: none; border-bottom: 1px solid #e0e0e0;
+            outline: none; font-size: 14px; color: #212121;
+        }
+        .input-group input:focus { border-bottom: 1px solid #2874f0; }
+        .input-group label {
+            position: absolute; left: 0; top: 10px; color: #878787; font-size: 14px;
+            pointer-events: none; transition: 0.2s ease all;
+        }
+        .input-group input:focus ~ label, .input-group input:valid ~ label {
+            top: -12px; font-size: 12px; color: #2874f0;
+        }
+        
+        .terms-text { font-size: 12px; color: #878787; margin-bottom: 20px; line-height: 1.4; }
+        .terms-text span { color: #2874f0; cursor: pointer; }
+        .login-btn {
+            background-color: #ff9900; color: #ffffff; border: none; width: 100%;
+            padding: 14px; border-radius: 2px; font-size: 15px; font-weight: 500;
+            cursor: pointer; box-shadow: 0 1px 2px 0 rgba(0,0,0,.2);
+        }
+        .close-modal {
+            position: absolute; right: 15px; top: 10px; font-size: 24px;
+            color: #878787; cursor: pointer; border: none; background: none;
         }
 
         @media (max-width: 900px) {
             .top-navbar { flex-wrap: wrap; gap: 12px; }
             .search-container { order: 3; max-width: 100%; margin: 5px 0 0 0; }
             .nav-right { justify-content: space-between; width: 100%; order: 2; }
-            .nav-left { order: 1; }
         }
     </style>
 </head>
@@ -227,90 +127,123 @@
 
     <header class="top-navbar">
         <div class="nav-left">
-            <a href="#" class="brand-logo">
-                <i class="fa-solid fa-bolt"></i> Cartify
-            </a>
-            <a href="#" class="travel-tab">
-                <i class="fa-solid fa-plane"></i> Travel
-            </a>
+            <a href="#" class="brand-logo"><i class="fa-solid fa-bolt"></i> Cartify</a>
+            <a href="#" class="travel-tab"><i class="fa-solid fa-plane"></i> Travel</a>
         </div>
-
         <div class="search-container">
             <i class="fa-solid fa-magnifying-glass search-icon"></i>
             <input type="text" class="search-bar" placeholder="Search for Products, Brands and More">
         </div>
-
         <div class="nav-right">
-            <div class="nav-location">
-                <i class="fa-solid fa-location-dot"></i> Location not set <span>Select delivery location &gt;</span>
+            <div class="nav-location"><i class="fa-solid fa-location-dot"></i> Location not set <span>Select delivery location &gt;</span></div>
+            <div class="nav-item" id="loginTrigger">
+                <i class="fa-regular fa-user"></i> Login <i class="fa-solid fa-angle-down" style="font-size: 10px;"></i>
             </div>
-            
-            <div class="nav-item">
-                <i class="fa-regular fa-user"></i>
-                Login <i class="fa-solid fa-angle-down" style="font-size: 10px;"></i>
-            </div>
-
-            <div class="nav-item">
-                More <i class="fa-solid fa-angle-down" style="font-size: 10px;"></i>
-            </div>
-
-            <a href="#" class="nav-item">
-                <i class="fa-solid fa-cart-shopping"></i> Cart
-            </a>
+            <div class="nav-item">More <i class="fa-solid fa-angle-down" style="font-size: 10px;"></i></div>
+            <a href="#" class="nav-item"><i class="fa-solid fa-cart-shopping"></i> Cart</a>
         </div>
     </header>
 
     <nav class="categories-bar">
-        <a href="#" class="category-item active">
-            <i class="fa-solid fa-bag-shopping"></i>
-            <span>For You</span>
-        </a>
-        <a href="#" class="category-item">
-            <i class="fa-solid fa-shirt"></i>
-            <span>Fashion</span>
-        </a>
-        <a href="#" class="category-item">
-            <i class="fa-solid fa-mobile-screen-button"></i>
-            <span>Mobiles</span>
-        </a>
-        <a href="#" class="category-item">
-            <i class="fa-solid fa-wand-magic-sparkles"></i>
-            <span>Beauty</span>
-        </a>
-        <a href="#" class="category-item">
-            <i class="fa-solid fa-laptop"></i>
-            <span>Electronics</span>
-        </a>
-        <a href="#" class="category-item">
-            <i class="fa-solid fa-house-chimney"></i> <span>Home</span>
-        </a>
-        <a href="#" class="category-item">
-            <i class="fa-solid fa-tv"></i>
-            <span>Appliances</span>
-        </a>
-        <a href="#" class="category-item">
-            <i class="fa-solid fa-face-smile"></i> <span>Toys, baby...</span>
-        </a>
-        <a href="#" class="category-item">
-            <i class="fa-solid fa-prescription-bottle"></i> <span>Food & H...</span>
-        </a>
-        <a href="#" class="category-item">
-            <i class="fa-solid fa-motorcycle"></i>
-            <span>2 Wheelers</span>
-        </a>
-        <a href="#" class="category-item">
-            <i class="fa-solid fa-baseball-bat-ball"></i>
-            <span>Sports & ...</span>
-        </a>
-        <a href="#" class="category-item">
-            <i class="fa-solid fa-book"></i>
-            <span>Books & ...</span>
-        </a>
-        <a href="#" class="category-item">
-            <i class="fa-solid fa-couch"></i>
-            <span>Furniture</span>
-        </a>
+        <a href="#" class="category-item active"><i class="fa-solid fa-bag-shopping"></i><span>For You</span></a>
+        <a href="#" class="category-item"><i class="fa-solid fa-shirt"></i><span>Fashion</span></a>
+        <a href="#" class="category-item"><i class="fa-solid fa-mobile-screen-button"></i><span>Mobiles</span></a>
+        <a href="#" class="category-item"><i class="fa-solid fa-wand-magic-sparkles"></i><span>Beauty</span></a>
+        <a href="#" class="category-item"><i class="fa-solid fa-laptop"></i><span>Electronics</span></a>
+        <a href="#" class="category-item"><i class="fa-solid fa-house-chimney"></i><span>Home</span></a>
+        <a href="#" class="category-item"><i class="fa-solid fa-tv"></i><span>Appliances</span></a>
+        <a href="#" class="category-item"><i class="fa-solid fa-face-smile"></i><span>Toys, baby...</span></a>
+        <a href="#" class="category-item"><i class="fa-solid fa-prescription-bottle"></i><span>Food & H...</span></a>
+        <a href="#" class="category-item"><i class="fa-solid fa-motorcycle"></i><span>2 Wheelers</span></a>
+        <a href="#" class="category-item"><i class="fa-solid fa-baseball-bat-ball"></i><span>Sports & ...</span></a>
+        <a href="#" class="category-item"><i class="fa-solid fa-book"></i><span>Books & ...</span></a>
+        <a href="#" class="category-item"><i class="fa-solid fa-couch"></i><span>Furniture</span></a>
     </nav>
 
+    <div class="modal-overlay" id="loginModal">
+        <div class="login-box">
+            <button class="close-modal" id="closeModal">&times;</button>
+            <div class="login-left">
+                <div>
+                    <h2>Join Us</h2>
+                    <p>Get access to your Orders, Wishlist and Recommendations</p>
+                </div>
+                <i class="fa-solid fa-truck-fast" style="font-size: 60px; opacity: 0.3;"></i>
+            </div>
+            <div class="login-right">
+                <form id="loginForm">
+                    <div class="input-group">
+                        <input type="text" id="userName" required autocomplete="off">
+                        <label>Enter Name</label>
+                    </div>
+                    <div class="input-group">
+                        <input type="email" id="userEmail" required autocomplete="off">
+                        <label>Enter Email</label>
+                    </div>
+                    <div class="input-group">
+                        <input type="tel" id="userPhone" required autocomplete="off" pattern="[0-9]{10}">
+                        <label>Enter Mobile Number</label>
+                    </div>
+                    <p class="terms-text">By continuing, you agree to Cartify's <span>Terms of Use</span> and <span>Privacy Policy</span>.</p>
+                    <button type="submit" class="login-btn">Continue</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // TODO: Paste your personalized Firebase config object right here
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase & Database
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // UI Modal Interactions
+        const loginTrigger = document.getElementById('loginTrigger');
+        const loginModal = document.getElementById('loginModal');
+        const closeModal = document.getElementById('closeModal');
+        const loginForm = document.getElementById('loginForm');
+
+        loginTrigger.addEventListener('click', () => loginModal.style.display = 'flex');
+        closeModal.addEventListener('click', () => loginModal.style.display = 'none');
+        window.addEventListener('click', (e) => { if(e.target === loginModal) loginModal.style.display = 'none'; });
+
+        // Intercept Form Submission and send to Firestore Database
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('userName').value;
+            const email = document.getElementById('userEmail').value;
+            const phone = document.getElementById('userPhone').value;
+
+            try {
+                // Saves data directly inside a collection called "users"
+                await addDoc(collection(db, "users"), {
+                    fullName: name,
+                    emailAddress: email,
+                    phoneNumber: phone,
+                    timestamp: serverTimestamp()
+                });
+
+                alert("Account created successfully!");
+                loginForm.reset();
+                loginModal.style.display = 'none';
+            } catch (error) {
+                console.error("Database Error: ", error);
+                alert("Something went wrong. Check the console config.");
+            }
+        });
+    </script>
 </body>
 </html>
