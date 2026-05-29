@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Class 6 Rapid Random Quiz</title>
+    <title>Class 6 Endless Dynamic Quiz</title>
+    <!-- PeerJS for seamless direct device-to-device connection -->
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         :root {
@@ -228,8 +229,9 @@
 <body>
 
     <div class="container">
+        <!-- SCREEN 1: Setup & Connection Menu -->
         <div id="setup-screen" class="screen active">
-            <h1>🎒 Class 6 Random Quiz Arena ✏️</h1>
+            <h1>🎒 Class 6 Endless Quiz Arena ✏️</h1>
             <div class="input-group">
                 <label for="username">Your Nickname:</label>
                 <input type="text" id="username" placeholder="Type your name here...">
@@ -237,10 +239,12 @@
             
             <hr style="opacity: 0.1; margin: 25px 0;">
 
+            <!-- Host Option -->
             <button onclick="initiateHost()">Option A: Create a New Room</button>
             
             <div class="divider">OR</div>
             
+            <!-- Join Option -->
             <div class="input-group">
                 <label for="join-room-id">Enter Friend's Room Code:</label>
                 <input type="text" id="join-room-id" placeholder="e.g., quiz-1234">
@@ -248,6 +252,7 @@
             <button style="background: #a29bfe; color: #1e1b4b; box-shadow: 0 4px 0 #6c5ce7;" onclick="connectToHost()">Option B: Join Friend's Room</button>
         </div>
 
+        <!-- SCREEN 2: Waiting Lobby -->
         <div id="waiting-screen" class="screen">
             <h2>Lobby Status</h2>
             <div id="room-info-display" class="room-display" style="display:none;">
@@ -257,6 +262,7 @@
             <div class="waiting-msg" id="waiting-status">Setting up network connection...</div>
         </div>
 
+        <!-- SCREEN 3: Live Gameplay -->
         <div id="quiz-screen" class="screen">
             <div class="live-scoreboard">
                 <div class="score-box">
@@ -269,15 +275,17 @@
                 </div>
             </div>
 
+            <!-- 10 Sec Individual Timer Bar -->
             <div class="timer-container">
                 <div id="timer" class="timer-bar"></div>
             </div>
 
-            <div class="question-text" id="question-text">Get Ready...</div>
+            <div class="question-text" id="question-text">Generating fresh question...</div>
             <div class="options-grid" id="options-container"></div>
             <div class="waiting-msg" id="status-message"></div>
         </div>
 
+        <!-- SCREEN 4: Match Report Summary -->
         <div id="results-screen" class="screen">
             <h1>✨ Match Results ✨</h1>
             <h2 id="winner-text" style="color: #55efc4; font-size: 32px; text-align: center; margin: 25px 0; white-space: pre-wrap;"></h2>
@@ -286,32 +294,14 @@
     </div>
 
     <script>
-        // Expanded Class 6 Master Question Pool
-        const masterQuizData = [
-            // Science & Materials
-            { q: "What is the process of changing water into water vapor called?", options: ["Condensation", "Evaporation", "Freezing"], correct: 1 },
-            { q: "Which of these components is a component of food that does NOT provide energy, but helps clear waste?", options: ["Vitamins", "Roughage / Dietary Fibre", "Carbohydrates"], correct: 1 },
-            { q: "What kind of joint is found between our head and upper neck?", options: ["Hinge Joint", "Ball and Socket Joint", "Pivotal Joint"], correct: 2 },
-            { q: "Which of the following is a luminous object?", options: ["The Moon", "The Sun", "A Wooden Table"], correct: 1 },
-            { q: "What do we call materials through which objects can be seen, but not clearly?", options: ["Transparent", "Opaque", "Translucent"], correct: 2 },
-            // Mathematics
-            { q: "What is the perimeter of a regular triangle with each side measuring 5 cm?", options: ["10 cm", "15 cm", "25 cm"], correct: 1 },
-            { q: "What is the smallest prime number?", options: ["1", "2", "3"], correct: 1 },
-            { q: "A fraction with a numerator greater than its denominator is called a...", options: ["Proper Fraction", "Improper Fraction", "Mixed Fraction"], correct: 1 },
-            // History & Geography
-            { q: "Which imaginary line divides the Earth into the Northern and Southern Hemispheres?", options: ["The Equator", "Tropic of Cancer", "Prime Meridian"], correct: 0 },
-            { q: "What are maps that show natural physical features of the earth called?", options: ["Political Maps", "Physical Maps", "Thematic Maps"], correct: 1 },
-            { q: "Which planet is closest to the Sun?", options: ["Earth", "Venus", "Mercury"], correct: 2 },
-            { q: "What is the script used to write the Hindi language?", options: ["Devanagari", "Roman", "Brahmi"], correct: 0 }
-        ];
-
-        let quizData = []; // This will hold the randomized selection for this session
         let peer = null;
         let connection = null;
         let myName = "";
         let opponentName = "Opponent";
         
         let currentQuestionIndex = 0;
+        const totalQuestionsPerMatch = 10; // Change this number to make games longer or shorter!
+        
         let myScore = 0;
         let oppScore = 0;
         
@@ -319,26 +309,111 @@
         let timerInterval;
         let myFinished = false;
         let oppFinished = false;
+        let currentQuestion = null;
+
+        // ==========================================
+        // ALGORITHMIC QUESTION ENGINE (CLASS 6)
+        // ==========================================
+        function generateDynamicQuestion() {
+            const types = ['math_perimeter', 'math_prime', 'math_fraction', 'science_water', 'science_materials', 'geo_planets', 'geo_lines'];
+            const chosenType = types[Math.floor(Math.random() * types.length)];
+
+            let q = "";
+            let options = [];
+            let correct = 0;
+
+            switch(chosenType) {
+                case 'math_perimeter': {
+                    const side = Math.floor(Math.random() * 12) + 3; // side between 3 and 14
+                    const shapes = [
+                        { name: "square", mult: 4 },
+                        { name: "regular triangle", mult: 3 },
+                        { name: "regular pentagon", mult: 5 },
+                        { name: "regular hexagon", mult: 6 }
+                    ];
+                    const targetShape = shapes[Math.floor(Math.random() * shapes.length)];
+                    const ans = side * targetShape.mult;
+
+                    q = `What is the perimeter of a ${targetShape.name} if each side measures exactly ${side} cm?`;
+                    options = [`${ans - 2} cm`, `${ans} cm`, `${ans + targetShape.mult} cm`].sort(() => Math.random() - 0.5);
+                    correct = options.indexOf(`${ans} cm`);
+                    break;
+                }
+                case 'math_prime': {
+                    const primes = [2, 3, 5, 7, 11, 13, 17, 19, 23];
+                    const targetPrime = primes[Math.floor(Math.random() * primes.length)];
+                    q = `Which of the following numbers is a Prime Number?`;
+                    options = [targetPrime, targetPrime + 1, targetPrime * 2].sort(() => Math.random() - 0.5);
+                    correct = options.indexOf(targetPrime);
+                    break;
+                }
+                case 'math_fraction': {
+                    const num = Math.floor(Math.random() * 10) + 6;
+                    const den = Math.floor(Math.random() * 5) + 2;
+                    // Ensure numerator is always larger to make it improper
+                    const actualNum = num > den ? num : num + den; 
+                    q = `A fraction like ${actualNum}/${den}, where the numerator is greater than the denominator, is called an...`;
+                    options = ["Proper Fraction", "Improper Fraction", "Mixed Fraction"];
+                    correct = 1;
+                    break;
+                }
+                case 'science_water': {
+                    const scenarios = [
+                        { q: "Water puddles drying up on a sidewalk under the bright midday sun", ans: "Evaporation" },
+                        { q: "Tiny droplets forming on the clean outside of a cold soda can", ans: "Condensation" },
+                        { q: "Clouds releasing water drops back down onto the forests and fields", ans: "Precipitation" }
+                    ];
+                    const selected = scenarios[Math.floor(Math.random() * scenarios.length)];
+                    q = `Which process of the Earth's natural water cycle explains this: "${selected.q}"?`;
+                    options = ["Evaporation", "Condensation", "Precipitation"].sort(() => Math.random() - 0.5);
+                    correct = options.indexOf(selected.ans);
+                    break;
+                }
+                case 'science_materials': {
+                    const items = [
+                        { name: "Clear glass pane", type: "Transparent" },
+                        { name: "Thick wooden heavy board", type: "Opaque" },
+                        { name: "Oiled or frosted tracing paper", type: "Translucent" },
+                        { name: "Clean clear drinking water", type: "Transparent" },
+                        { name: "Solid iron steel plate", type: "Opaque" }
+                    ];
+                    const picked = items[Math.floor(Math.random() * items.length)];
+                    q = `How would you classify this material based on Class 6 Science: "${picked.name}"?`;
+                    options = ["Transparent", "Opaque", "Translucent"].sort(() => Math.random() - 0.5);
+                    correct = options.indexOf(picked.type);
+                    break;
+                }
+                case 'geo_planets': {
+                    const facts = [
+                        { q: "Which planet is positioned closest to the burning Sun?", ans: "Mercury" },
+                        { q: "Which planet is famous for being known as our Red Planet?", ans: "Mars" },
+                        { q: "Which gas giant is recognized as the largest planet in our solar system?", ans: "Jupiter" }
+                    ];
+                    const fact = facts[Math.floor(Math.random() * facts.length)];
+                    q = fact.q;
+                    options = ["Mercury", "Venus", "Mars", "Jupiter"].sort(() => Math.random() - 0.5);
+                    correct = options.indexOf(fact.ans);
+                    break;
+                }
+                case 'geo_lines': {
+                    const lines = [
+                        { name: "Equator", desc: "divides our planet into the Northern and Southern Hemispheres" },
+                        { name: "Prime Meridian", desc: "divides our planet into Eastern and Western Hemispheres" }
+                    ];
+                    const targetLine = lines[Math.floor(Math.random() * lines.length)];
+                    q = `Which fundamental imaginary line on Earth ${targetLine.desc}?`;
+                    options = ["The Equator", "The Prime Meridian", "Tropic of Cancer"].sort(() => Math.random() - 0.5);
+                    correct = options.indexOf(targetLine.name === "Equator" ? "The Equator" : "The Prime Meridian");
+                    break;
+                }
+            }
+
+            return { q, options, correct };
+        }
 
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
-        }
-
-        // Shuffles an array randomly
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
-        }
-
-        // Prepare 6 random questions from our pool
-        function setupRandomQuestions() {
-            let shuffled = shuffleArray([...masterQuizData]);
-            // Pick a fixed number of questions per game (e.g., 6 questions)
-            quizData = shuffled.slice(0, 6);
         }
 
         // ==========================================
@@ -404,8 +479,6 @@
         // ==========================================
         function setupConnectionDataListeners() {
             connection.on('open', () => {
-                // Initialize random questions locally on connect
-                setupRandomQuestions();
                 connection.send({ type: 'HANDSHAKE', name: myName });
             });
 
@@ -439,13 +512,15 @@
             timeLeft = 10; 
             document.getElementById('status-message').textContent = "";
             
-            const currentQ = quizData[currentQuestionIndex];
-            document.getElementById('question-text').textContent = `Q${currentQuestionIndex + 1}: ${currentQ.q}`;
+            // Generate a fresh, entirely unscripted random question structure
+            currentQuestion = generateDynamicQuestion();
+            
+            document.getElementById('question-text').textContent = `Q${currentQuestionIndex + 1}: ${currentQuestion.q}`;
 
             const container = document.getElementById('options-container');
             container.innerHTML = "";
 
-            currentQ.options.forEach((opt, idx) => {
+            currentQuestion.options.forEach((opt, idx) => {
                 const btn = document.createElement('button');
                 btn.className = "option-btn";
                 btn.textContent = opt;
@@ -477,30 +552,28 @@
         function submitAnswer(selectedIndex) {
             clearInterval(timerInterval);
 
-            const currentQ = quizData[currentQuestionIndex];
-            if (selectedIndex === currentQ.correct) {
+            if (selectedIndex === currentQuestion.correct) {
                 myScore += 10;
                 document.getElementById('my-live-score').textContent = myScore;
             }
 
-            // Sync score live to opponent
+            // Sync score instantly to peer device
             connection.send({
                 type: 'SCORE_UPDATE',
                 score: myScore
             });
 
-            // Instant progress to next index card
             currentQuestionIndex++;
-            if (currentQuestionIndex < quizData.length) {
+            if (currentQuestionIndex < totalQuestionsPerMatch) {
                 loadQuestion();
             } else {
                 myFinished = true;
                 connection.send({ type: 'FINISHED' });
                 
-                document.getElementById('question-text').textContent = "You finished all questions!";
+                document.getElementById('question-text').textContent = "You finished all your questions!";
                 document.getElementById('options-container').innerHTML = "";
                 document.getElementById('timer').style.width = "0%";
-                document.getElementById('status-message').textContent = `Waiting for ${opponentName} to complete their round...`;
+                document.getElementById('status-message').textContent = `Waiting for ${opponentName} to cross the finish line...`;
                 
                 checkMatchEnd();
             }
